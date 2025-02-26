@@ -137,7 +137,7 @@ class rmOrder {
   * 4 finish = Einde huur
   * 5 archive = Order sluiten
   ** */
-const orderItemStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const OrderItemStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 /** *
 * construct:
 * @param {string} _itemId - the auto generated id for referring this item within Order
@@ -149,7 +149,7 @@ class rmOrderItem {
 
    constructor( _item ) {
       this.item = _item;
-      this.item.status = orderItemStatus[0];
+      this.item.status = OrderItemStatus[0];
    }
 
    /** 
@@ -222,4 +222,4 @@ async initData() {
 }   
 */
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, rmOrderItemStatus }; 
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus }; 
