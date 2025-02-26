@@ -1,0 +1,17 @@
+{
+  "name": "rm-pricecalculation",
+  "version": "1.0.0",
+  "description": "RentMagic Price Calculation As A NanoService",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "RentMagic",
+    "InfoDatek",
+    "Rental",
+    "SaaS"
+  ],
+  "author": "Luis Panadero",
+  "license": "ISC"
+}
