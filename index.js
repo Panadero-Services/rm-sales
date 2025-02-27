@@ -1,2 +1,2 @@
-const rmPriceCalculation = require("./rm-pricecalculation);
+const rmPriceCalculation = require("./rm-pricecalculation");
     export default rmPriceCalculation;
