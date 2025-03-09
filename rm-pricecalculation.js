@@ -3,16 +3,16 @@
 // *   NanoService : rm-pricecalculation.js      * * 
 // *   Location : /modules/build/pricecalculation  * 
 // *   Modified L.B.   *                 *         *
-// *   Date:    17 feb 2025             *          *
-// *   Version: v0.1.0.            *        *      *
+// *   Date:    02 mar 2025             *          *
+// *   Version: v0.1.1.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
 const moduleName = "RM-PriceCalculation";
 const moduleGit = "https://github.com/lieuwebakker/rm-pricecalculation";
-const moduleVersion = "0.1.0";
-const moduleDate = "26 feb 2025";
+const moduleVersion = "0.1.1";
+const moduleDate = "02 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... modular style!";
 
@@ -25,6 +25,8 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * ERP module for RM_Rental Order Handling inspired by frontEndTeamSeries
 * This module is supposed to calculate the order price for rental and sales orders
 * In order to make this work we need to import all order details as well
+* 
+* v01.1 Add DiscountTypes + DiscountTemplates
 * **/
 
 
@@ -69,6 +71,10 @@ class rmOrder {
 
    getOrder() {
       return this.order;
+   }
+
+   addItem(_order = Order) {
+      this.items.push(_order);
    }
 
    calculateOrderprice(_packageCost = 0, _packageDiscount = 0) {
@@ -166,6 +172,14 @@ class rmOrderItem {
          vat : 0.19
       }
    */
+
+
+   /**
+    * getItem
+    * return this as item
+    * @param 
+    * @returns <object>
+    * */
    getItem() {
       return this.item;
    }
@@ -180,6 +194,36 @@ class rmOrderItem {
          discountPercentage :  10
       }
    */
+
+   /**
+    * applyDiscount
+    * calculate discount based on type 'percentage', 'flat', 'buyXgetY'
+    * buyXgetY means... 3 halen 2 betalen
+    * @param discountType ( 'percentage', 'flat', 'buyXgetY')
+    * @param value (number)
+    * @returns 
+    * */
+    applyDiscount(discountType, value) {
+        switch (discountType) {
+            case 'percentage':
+                this.total -= (this.total * value) / 100;
+                break;
+            case 'flat':
+                this.total -= value;
+                break;
+            case 'buyXgetY':
+                this.items.forEach(item => {
+                    if (item.quantity >= value.x) {
+                        let freeItems = Math.floor(item.quantity / value.x) * value.y;
+                        this.total -= freeItems * item.price;
+                    }
+                });
+                break;
+            default:
+                throw new Error('Invalid discount type');
+        }
+    }
+
    calculateDiscountLine(_line, _discount = 1) {
       if (_line.condition){
          _discount = _discount * (1 - (_line.discountPercentage/100));
@@ -187,7 +231,7 @@ class rmOrderItem {
       return _discount;
    }
 
-   calculateRowprice() {
+   calculateBasePrice() {
       let that = this;
       // Step 1: extraheer variabelen voor itemPrijsBerekening.
       const { name, pricePerUnit, qty, discountFactor , vat} = that.item;
@@ -208,7 +252,35 @@ class rmOrderItem {
    // helpers
    static checkCondition(_condition, _value) { return _condition(_value); }
    static checkMinQty(_qty, _min) { return _qty >= _min; }
+
+   applyDiscountTemplate(category) {
+        const discountTemplates = {
+            'electronics': { type: 'percentage', value: 10 },
+            'fashion': { type: 'flat', value: 20 },
+            'groceries': { type: 'buyXgetY', value: { x: 3, y: 1 } },
+        };
+
+        if (!discountTemplates[category]) {
+            throw new Error('Invalid category for discount template');
+        }
+
+        const { type, value } = discountTemplates[category];
+        this.applyDiscount(type, value);
+    }
+
+    updateStatus(newStatus) {
+        if (!OrderItemStatus.includes(newStatus)) {
+            throw new Error('Invalid status');
+        }
+        this.status = newStatus;
+    }
+
+
 }
+
+
+
+
 
 const colors = ['red','gray','white','yellow','magenta','green','blue','cyan','purple','teal'];
 
