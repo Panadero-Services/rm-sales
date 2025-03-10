@@ -4,14 +4,14 @@
 // *   Location : /modules/build/pricecalculation  * 
 // *   Modified L.B.   *                 *         *
 // *   Date:    10 mar 2025             *          *
-// *   Version: v0.1.2.            *        *      *
+// *   Version: v0.1.3.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
 const moduleName = "RM-PriceCalculation";
 const moduleGit = "https://github.com/lieuwebakker/rm-pricecalculation";
-const moduleVersion = "0.1.2";
+const moduleVersion = "0.1.3";
 const moduleDate = "10 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... modular style!";
