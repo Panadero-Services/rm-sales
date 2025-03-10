@@ -4,7 +4,7 @@
 // *   Location : /modules/build/pricecalculation  * 
 // *   Modified L.B.   *                 *         *
 // *   Date:    02 mar 2025             *          *
-// *   Version: v0.1.1.            *        *      *
+// *   Version: v0.1.2.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
