@@ -367,7 +367,7 @@ const applyDiscountLine = async (_item, _discountLines) => {
             resolve(_item);
         } catch (err) {
            _item.errorStatus = -200;
-            _item.errorMsg = "nanoService.applyDiscount() rejected!!... ";
+            _item.errorMsg = "nanoService.applyDiscountLine() rejected!!... ";
             console.log(err);
             resolve ();
       }
