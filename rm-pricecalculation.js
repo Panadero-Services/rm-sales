@@ -28,7 +28,11 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * 
 * v01.1 Add DiscountTypes + DiscountTemplates
 * 
-* v01.2 Test
+* v01.2 Isolate routines
+* - applyDiscount
+* - applyDiscountLine
+* _ _processDiscount
+* 
 * **/
 
 
@@ -276,13 +280,160 @@ class rmOrderItem {
         }
         this.status = newStatus;
     }
-
-
 }
 
 
 
 
+/*
+call multiLineDiscount
+{
+    "item" : {
+         "id" : 1,
+         "type" : "buy",
+         "itemName": "drillMachine",
+         "pricePerUnit": 25,
+         "qty": 7, 
+         "status": "created", 
+         "grossPrice": 0, 
+         "nettPrice": 0, 
+         "vat" : 0.19
+      },
+        
+    "discount" : {
+        "discountline1":{
+            "type" : "buyXgetY", 
+            "factor" : 
+                {   "x" : 4,
+                    "y" : 6,
+                    "z" : 0
+                }
+        }, 
+        "discountline2":{
+        "type" : "flat", 
+        "factor" : 
+            {   "x" : 12,
+                "y" : 6,
+                "z" : 0
+            }
+        } ,
+        "discountline3":{
+        "type" : "percentage", 
+        "factor" : 
+            {   "x" : 2,
+                "y" : 6,
+                "z" : 0
+            }
+        }  
+    }
+}
+*/
+
+
+/**
+* _processDiscount
+* calculate _item.grossPrice based on 1 discountLine
+* flat means... item.grossPrice - 50 (factor.x)
+* percentage means... item.grossPrice -= 5% (factor.x)
+* buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
+* @param _item ( object)
+* @param _discount (object)
+* @returns overRides _item
+* */
+function _processDiscount(_item, _discount) {
+
+    const { pricePerUnit, qty } = _item;
+    const { type, factor } = _discount;
+        switch (type) {
+            case 'percentage':
+                _item.grossPrice -= (_item.grossPrice * factor.x) / 100;
+                break;
+            case 'flat':
+                _item.grossPrice -= factor.x;
+                break;
+            case 'buyXgetY':
+                    // nubmer of items NOT PART of discount offer
+                    const restItems = Math.min(qty % factor.y, factor.x);
+                    
+                    // number of items PART OF discount offer 
+                    const discountItems  = (Math.floor(qty / factor.y)*factor.x);
+
+                    // calculate itemsToPay
+                    _item.itemsToPay = restItems + discountItems;
+
+                       // _item.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
+                    _item.grossPrice = _item.itemsToPay* pricePerUnit;
+                break;
+            default:
+                _item.errorStatus = -100;
+                _item.errorMsg = "disountType not defined: "+type;
+                //throw new Error('Invalid discount type');
+        }
+}
+
+
+
+/**
+* applyDiscountLine
+* calculate discount based on type 'percentage', 'flat', 'buyXgetY'
+* passes 1 line
+* @param _item ( object)
+* @param _discount (object)
+* @returns overRides _item
+* */
+function applyDiscountLine(_item, _discount) {
+    return new Promise( async (resolve, reject) => {
+        try {
+            const { pricePerUnit, qty, vat } = _item;
+            const { type, factor } = _discount;
+          
+            // calculate basePrice
+            _item.grossPrice  = pricePerUnit * qty;
+
+            // processes discountLine
+            _processDiscount(_item, _discount)
+
+            resolve(_item);
+        } catch (err) {
+           _item.errorStatus = -200;
+            _item.errorMsg = "nanoService.applyDiscount() rejected!!... ";
+            console.log(err);
+            resolve ();
+      }
+    });
+}
+
+/**
+* applyDiscount
+* calculate discount based on type 'percentage', 'flat', 'buyXgetY'
+* passes multiple lines
+* @param _item ( object)
+* @param _discount (object)
+* @returns overRides _item
+* */
+function applyDiscount(_item, _discountLines) {
+    return new Promise( async (resolve, reject) => {
+        try {
+            const { pricePerUnit, qty } = _item;
+          
+            // calculate basePrice
+            _item.grossPrice  = pricePerUnit * qty;
+
+            // loops all discountLines
+            Object.entries(_discountLines).forEach(([key, discount]) => {
+                // processes discountLine
+                _processDiscount(_item, discount)
+            });
+
+            resolve(_item);
+        } catch (err) {
+           _item.errorStatus = -200;
+            _item.errorMsg = "nanoService.applyDiscount() rejected!!... ";
+            console.log(err);
+            resolve ();
+      }
+    });
+}
 
 const colors = ['red','gray','white','yellow','magenta','green','blue','cyan','purple','teal'];
 
@@ -296,4 +447,4 @@ async initData() {
 }   
 */
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus }; 
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount }; 
