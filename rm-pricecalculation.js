@@ -200,34 +200,6 @@ class rmOrderItem {
       }
    */
 
-   /**
-    * applyDiscount
-    * calculate discount based on type 'percentage', 'flat', 'buyXgetY'
-    * buyXgetY means... 3 halen 2 betalen
-    * @param discountType ( 'percentage', 'flat', 'buyXgetY')
-    * @param value (number)
-    * @returns 
-    * */
-    applyDiscount(discountType, value) {
-        switch (discountType) {
-            case 'percentage':
-                this.total -= (this.total * value) / 100;
-                break;
-            case 'flat':
-                this.total -= value;
-                break;
-            case 'buyXgetY':
-                this.items.forEach(item => {
-                    if (item.quantity >= value.x) {
-                        let freeItems = Math.floor(item.quantity / value.x) * value.y;
-                        this.total -= freeItems * item.price;
-                    }
-                });
-                break;
-            default:
-                throw new Error('Invalid discount type');
-        }
-    }
 
    calculateDiscountLine(_line, _discount = 1) {
       if (_line.condition){
@@ -380,7 +352,7 @@ function _processDiscount(_item, _discount) {
 * @param _discount (object)
 * @returns overRides _item
 * */
-function applyDiscountLine(_item, _discount) {
+const applyDiscountLine = async (_item, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty, vat } = _item;
@@ -410,7 +382,7 @@ function applyDiscountLine(_item, _discount) {
 * @param _discount (object)
 * @returns overRides _item
 * */
-function applyDiscount(_item, _discountLines) {
+const applyDiscount = async (_item, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _item;
