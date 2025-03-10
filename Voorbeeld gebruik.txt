@@ -1,0 +1,21 @@
+// Voorbeeld gebruik:
+// const Prijsberekeningen = require('./rm_prijsberekening');
+// const artikelen = [
+//     { naam: "Boormachine", prijsPerEenheid: 10, aantal: 1, korting: 10 },
+//     { naam: "Steiger", prijsPerEenheid: 50, aantal: 2, korting: 5 }
+// ];
+// const huurperiode = 10; // dagen
+// const extraKosten = 20; // Borg, schoonmaakkosten etc.
+// const prijsberekening = new Prijsberekeningen(artikelen, huurperiode, extraKosten);
+// prijsberekening.berekenHuurprijs();
+
+// Voorbeeld gebruik van checkVoorwaarde functie:
+// const resultaat = Prijsberekeningen.checkVoorwaarde((x) => x > 50, 60);
+// console.log(resultaat); // true
+
+// Voorbeeld gebruik van checkMinimaalAantal functie:
+// const minimaalAantalCheck = Prijsberekeningen.checkMinimaalAantal(5, 3);
+// console.log(minimaalAantalCheck); // true
+
+
+// const Prijsberekeningen = require('./rm_prijsberekening');
