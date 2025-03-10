@@ -31,7 +31,6 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * v01.2 Isolate routines
 * - applyDiscount
 * - applyDiscountLine
-* _ _processDiscount
 * 
 * **/
 
