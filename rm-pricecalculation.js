@@ -3,7 +3,7 @@
 // *   NanoService : rm-pricecalculation.js      * * 
 // *   Location : /modules/build/pricecalculation  * 
 // *   Modified L.B.   *                 *         *
-// *   Date:    02 mar 2025             *          *
+// *   Date:    10 mar 2025             *          *
 // *   Version: v0.1.2.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
@@ -11,8 +11,8 @@
 /** Default module properties */
 const moduleName = "RM-PriceCalculation";
 const moduleGit = "https://github.com/lieuwebakker/rm-pricecalculation";
-const moduleVersion = "0.1.1";
-const moduleDate = "02 mar 2025";
+const moduleVersion = "0.1.2";
+const moduleDate = "10 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... modular style!";
 
@@ -27,6 +27,8 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * In order to make this work we need to import all order details as well
 * 
 * v01.1 Add DiscountTypes + DiscountTemplates
+* 
+* v01.2 Test
 * **/
 
 
