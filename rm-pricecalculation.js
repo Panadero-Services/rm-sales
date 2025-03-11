@@ -3,7 +3,7 @@
 // *   NanoService : rm-pricecalculation.js      * * 
 // *   Location : /modules/build/pricecalculation  * 
 // *   Modified L.B.   *                 *         *
-// *   Date:    10 mar 2025             *          *
+// *   Date:    11 mar 2025             *          *
 // *   Version: v0.1.3.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
@@ -12,7 +12,7 @@
 const moduleName = "RM-PriceCalculation";
 const moduleGit = "https://github.com/lieuwebakker/rm-pricecalculation";
 const moduleVersion = "0.1.3";
-const moduleDate = "10 mar 2025";
+const moduleDate = "11 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... modular style!";
 
@@ -31,6 +31,9 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * v01.2 Isolate routines
 * - applyDiscount
 * - applyDiscountLine
+* 
+* * v01.3 Include Fixed 
+* - replaces grossPrice with factor.z (fixed value)
 * 
 * **/
 
@@ -83,31 +86,31 @@ class rmOrder {
    }
 
    calculateOrderprice(_packageCost = 0, _packageDiscount = 0) {
-      let that = this;
+      // let that = this; mag niet van GertJan :( :(
 
       // Step 0: reset totals
-      that.order.grossPrice = 0;
-      that.order.nettPrice = 0;
+      this.order.grossPrice = 0;
+      this.order.nettPrice = 0;
 
-      that.order.orderItems.forEach(item => {
+      this.order.orderItems.forEach(item => {
          const { type, itemName, pricePerUnit, qty, status, grossPrice, nettPrice} = item;
 
          // Step 1: sum orderGrossPrice with rowGrossPrice
-         that.grossPrice += grossPrice;
+         this.grossPrice += grossPrice;
 
          // Step 2: sum orderNettPrice with rowNettPrice
-         that.nettPrice += nettPrice;
+         this.nettPrice += nettPrice;
 
          console.log(item);
       });
 
       // Step 3 Extra kosten toevoegen
       // --> packageCost = deprecated --> specific orderRow
-      // that.grossPrice += _packageCost;
+      // this.grossPrice += _packageCost;
 
       // Step 4 Extra korting toevoegen
       // --> _packageDiscount = deprecated --> specific orderRow
-      // that.grossPrice -= _packageDiscount;
+      // this.grossPrice -= _packageDiscount;
       console.log(item);
 
       return totalPrice;
@@ -209,21 +212,21 @@ class rmOrderItem {
    }
 
    calculateBasePrice() {
-      let that = this;
+      // let that = this; mag niet van GertjJan :(
       // Step 1: extraheer variabelen voor itemPrijsBerekening.
-      const { name, pricePerUnit, qty, discountFactor , vat} = that.item;
+      const { name, pricePerUnit, qty, discountFactor , vat} = this.item;
    
       // Step 2: Wat is de BasisHuurPrijs?
-      let rowBasePrice = pricePerUnit * qty * that.rentPeriod;
+      let rowBasePrice = pricePerUnit * qty * this.rentPeriod;
 
       // Step 3: Bereken de Korting over de BasisHuurPrijs
       let discount = rowBasePrice * (discountFactor / 100);
 
       // Step 4: Trek de korting van de BasisHuurPrijs af.
-      that.item.grossPrice = (rowBasePrice - discount).toFixed(2);
+      this.item.grossPrice = (rowBasePrice - discount).toFixed(2);
 
       // Step 5: Update Class.grossPrice
-      that.item.nettPrice = (that.item.grossPrice * (1 + vat)).toFixed(2);
+      this.item.nettPrice = (this.item.grossPrice * (1 + vat)).toFixed(2);
    }
 
    // helpers
@@ -233,6 +236,7 @@ class rmOrderItem {
    applyDiscountTemplate(category) {
         const discountTemplates = {
             'electronics': { type: 'percentage', value: 10 },
+            'grabbelbak': { type: 'fixed', value: 50 },
             'fashion': { type: 'flat', value: 20 },
             'groceries': { type: 'buyXgetY', value: { x: 3, y: 1 } },
         };
@@ -252,9 +256,6 @@ class rmOrderItem {
         this.status = newStatus;
     }
 }
-
-
-
 
 /*
 call multiLineDiscount
@@ -287,8 +288,16 @@ call multiLineDiscount
                 "y" : 6,
                 "z" : 0
             }
-        } ,
+        },
         "discountline3":{
+        "type" : "fixed", 
+        "factor" : 
+            {   "x" : 0,
+                "y" : 0,
+                "z" : 320
+            }
+        },        
+        "discountline4":{
         "type" : "percentage", 
         "factor" : 
             {   "x" : 2,
@@ -305,6 +314,7 @@ call multiLineDiscount
 * _processDiscount
 * calculate _item.grossPrice based on 1 discountLine
 * flat means... item.grossPrice - 50 (factor.x)
+* fixed means... item.grossPrice equals factor.z
 * percentage means... item.grossPrice -= 5% (factor.x)
 * buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
 * @param _item ( object)
@@ -312,7 +322,6 @@ call multiLineDiscount
 * @returns overRides _item
 * */
 function _processDiscount(_item, _discount) {
-
     const { pricePerUnit, qty } = _item;
     const { type, factor } = _discount;
         switch (type) {
@@ -321,6 +330,9 @@ function _processDiscount(_item, _discount) {
                 break;
             case 'flat':
                 _item.grossPrice -= factor.x;
+                break;
+            case 'fixed':
+                _item.grossPrice -= factor.z;
                 break;
             case 'buyXgetY':
                     // nubmer of items NOT PART of discount offer
@@ -346,7 +358,7 @@ function _processDiscount(_item, _discount) {
 
 /**
 * applyDiscountLine
-* calculate discount based on type 'percentage', 'flat', 'buyXgetY'
+* calculate discount based on type 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes 1 line
 * @param _item ( object)
 * @param _discount (object)
@@ -376,7 +388,7 @@ const applyDiscountLine = async (_item, _discountLines) => {
 
 /**
 * applyDiscount
-* calculate discount based on type 'percentage', 'flat', 'buyXgetY'
+* calculate discount based on type 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes multiple lines
 * @param _item ( object)
 * @param _discount (object)
