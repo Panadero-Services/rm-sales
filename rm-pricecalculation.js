@@ -414,11 +414,12 @@ const applyDiscount = async (_item, _discountLines) => {
             // responds _item...
             resolve(_item);
         } catch (err) {
-           _item.errorStatus = -200;
-            _item.errorMsg = "nanoService.applyDiscount() rejected!!... ";
+            err.statusCode = -200;
+            err.rejected = -"nanoService.applyDiscount() rejected!!... ";
+            _item.error = err;
             console.log(err);
-            resolve ();
-        }
+            resolve(_item);
+      }
     });
 }
 
