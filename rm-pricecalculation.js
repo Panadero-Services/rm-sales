@@ -309,7 +309,6 @@ call multiLineDiscount
 }
 */
 
-
 /**
 * _processDiscount
 * calculate _item.grossPrice based on 1 discountLine
@@ -348,13 +347,14 @@ function _processDiscount(_item, _discount) {
                     _item.grossPrice = _item.itemsToPay* pricePerUnit;
                 break;
             default:
-                _item.errorStatus = -100;
-                _item.errorMsg = "disountType not defined: "+type;
-                //throw new Error('Invalid discount type');
+                let _err={};
+                _err.errorStatus = -100;
+                _err.errorMsg = "disountType undefined correct: "+type;
+                _item.error = err;
+                console.log(err);
+                resolve(_item);
         }
 }
-
-
 
 /**
 * applyDiscountLine
@@ -376,12 +376,15 @@ const applyDiscountLine = async (_item, _discountLines) => {
             // processes discountLine
             _processDiscount(_item, _discount)
 
+            // responds _item...
             resolve(_item);
+
         } catch (err) {
-           _item.errorStatus = -200;
-            _item.errorMsg = "nanoService.applyDiscountLine() rejected!!... ";
+            err.statusCode = -200;
+            err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
+            _item.error = err;
             console.log(err);
-            resolve ();
+            resolve(_item);
       }
     });
 }
@@ -408,13 +411,14 @@ const applyDiscount = async (_item, _discountLines) => {
                 _processDiscount(_item, discount)
             });
 
+            // responds _item...
             resolve(_item);
         } catch (err) {
            _item.errorStatus = -200;
             _item.errorMsg = "nanoService.applyDiscount() rejected!!... ";
             console.log(err);
             resolve ();
-      }
+        }
     });
 }
 
