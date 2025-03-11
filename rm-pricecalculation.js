@@ -364,7 +364,7 @@ function _processDiscount(_item, _discount) {
 * @param _discount (object)
 * @returns overRides _item
 * */
-const applyDiscountLine = async (_item, _discountLines) => {
+const applyDiscountLine = async (_item, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty, vat } = _item;
@@ -374,7 +374,7 @@ const applyDiscountLine = async (_item, _discountLines) => {
             _item.grossPrice  = pricePerUnit * qty;
 
             // processes discountLine
-            _processDiscount(_item, _discount)
+            _processDiscount(_item, _discountLine)
 
             // responds _item...
             resolve(_item);

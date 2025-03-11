@@ -4,8 +4,7 @@
 
 ## Supported Versions
 
-These are the latest version as tested with both frontend and backend
-
+These are the latest version as tested with both CLI and Postman
 If you do require a version outside of this chart updated with patch fix,
 please [contact me](mailto:lieuwe@panaderos.nl).
 
@@ -13,7 +12,6 @@ please [contact me](mailto:lieuwe@panaderos.nl).
 | ------- | ------------------------------------------ | ----------------- |
 | 0.1.3   | :white_check_mark: 	    	| 2025-03-11   |
 | 0.1.2   | :white_check_mark:          | 2025-02-29   |
-
 
 ## 
 
