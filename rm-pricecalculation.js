@@ -367,8 +367,7 @@ function _processDiscount(_item, _discount) {
 const applyDiscountLine = async (_item, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
-            const { pricePerUnit, qty, vat } = _item;
-            const { type, factor } = _discount;
+            const { pricePerUnit, qty } = _item;
           
             // calculate basePrice
             _item.grossPrice  = pricePerUnit * qty;
