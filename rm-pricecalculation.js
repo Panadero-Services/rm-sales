@@ -331,7 +331,7 @@ function _processDiscount(_item, _discount) {
                 _item.grossPrice -= factor.x;
                 break;
             case 'fixed':
-                _item.grossPrice -= factor.z;
+                _item.grossPrice = factor.z;
                 break;
             case 'buyXgetY':
                     // nubmer of items NOT PART of discount offer
