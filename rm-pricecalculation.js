@@ -213,6 +213,7 @@ class rmOrderItem {
 
    calculateBasePrice() {
       // let that = this; mag niet van GertjJan :(
+    
       // Step 1: extraheer variabelen voor itemPrijsBerekening.
       const { name, pricePerUnit, qty, discountFactor , vat} = this.item;
    
