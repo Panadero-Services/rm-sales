@@ -352,8 +352,8 @@ function _processDiscount(_line, _discount) {
                     let _err={};
                     _err.errorStatus = -200;
                     _err.errorMsg = "disountdiscountType undefined correct: "+discountType;
-                    _line.error = err;
-                    console.log(err);
+                    _line.error = _err;
+                    console.log(_err);
                     resolve(_line);
                 }
             } catch (err) {
@@ -375,7 +375,7 @@ function _processDiscount(_line, _discount) {
 * @param _discount (object)
 * @returns overRides _line
 * */
-const applyDiscountLine = async (_item, _discountLine) => {
+const applyDiscountLine = async (_line, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
