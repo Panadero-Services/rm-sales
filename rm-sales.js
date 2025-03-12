@@ -355,13 +355,13 @@ function _processDiscount(_line, _discount) {
                     _line.error = err;
                     console.log(err);
                     resolve(_line);
+                }
             } catch (err) {
                 err.statusCode = -210;
                 err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
                 _line.error = err;
                 console.log(err);
                 resolve(_line);
-            }
         }
     });
 }
