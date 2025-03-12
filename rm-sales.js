@@ -196,7 +196,7 @@ class OrderLine {
     }
    
     applyDiscount() {
-        _applyDiscount(this.line, this.discount ); // 10% off
+        applyDiscount(this.line, this.discount ); // 10% off
     }
 
     calculateDiscountLine(_line, _discount = 1) {
@@ -364,7 +364,7 @@ function _processDiscount(_item, _discount) {
 * @param _discount (object)
 * @returns overRides _line
 * */
-const _applyDiscountLine = async (_item, _discountLine) => {
+const applyDiscountLine = async (_item, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
@@ -396,7 +396,7 @@ const _applyDiscountLine = async (_item, _discountLine) => {
 * @param _discount (object)
 * @returns overRides _line
 * */
- const _applyDiscount = async (_line, _discountLines) => {
+ const applyDiscount = async (_line, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
