@@ -1,20 +1,20 @@
 // * * *     *       *   *       *   *   *   * *** *
 // *    *       *     *      *   *       *   *     *
-// *   NanoService : rm-pricecalculation.js      * * 
-// *   Location : /modules/build/pricecalculation  * 
+// *   NanoService : rm-sales.js      * * 
+// *   Location : /modules/build/rm-sales  * 
 // *   Modified L.B.   *                 *         *
-// *   Date:    11 mar 2025             *          *
-// *   Version: v0.1.3.            *        *      *
+// *   Date:    12 mar 2025             *          *
+// *   Version: v0.1.4.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
-const moduleName = "RM-PriceCalculation";
-const moduleGit = "https://github.com/lieuwebakker/rm-pricecalculation";
-const moduleVersion = "0.1.3";
-const moduleDate = "11 mar 2025";
+const moduleName = "RM-Sales";
+const moduleGit = "https://github.com/lieuwebakker/rm-sales";
+const moduleVersion = "0.1.4";
+const moduleDate = "12 mar 2025";
 const moduleAuthor = "lpab@Rm";
-const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... modular style!";
+const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
 /** Default low level dependencies */
 // import ".../RM-codebase/legacy.js";
@@ -33,6 +33,9 @@ const moduleTitle = "RM RentalPriceCalculation redefined and reengineered... mod
 * - applyDiscountLine
 * 
 * * v01.3 Include Fixed 
+* - replaces grossPrice with factor.z (fixed value)
+* 
+* * v01.4 Rename PriceCalculation to rmSales
 * - replaces grossPrice with factor.z (fixed value)
 * 
 * **/
@@ -69,7 +72,7 @@ const Order = {
 * @description this is the core priceCalculation module that contains minimum requirements
 * @returns object entity
 ** */
-class rmOrder {
+class Order {
 
    constructor(_order = Order) {
       this.orderNr = this.generateOrderNr();
@@ -92,8 +95,8 @@ class rmOrder {
       this.order.grossPrice = 0;
       this.order.nettPrice = 0;
 
-      this.order.orderItems.forEach(item => {
-         const { type, itemName, pricePerUnit, qty, status, grossPrice, nettPrice} = item;
+      this.order.orderRows.forEach(row => {
+         const { type, itemName, pricePerUnit, qty, status, grossPrice, nettPrice} = order;
 
          // Step 1: sum orderGrossPrice with rowGrossPrice
          this.grossPrice += grossPrice;
@@ -143,7 +146,7 @@ class rmOrder {
 }
 
 /** *
-  * itemStatus
+  * rowStatus
   * 0 created = Aangemaakt
   * 1 selected = Invoer klaar
   * 2 prepare = Voorbereiden + <optie Steppen> 
@@ -151,26 +154,27 @@ class rmOrder {
   * 4 finish = Einde huur
   * 5 archive = Order sluiten
   ** */
-const OrderItemStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const OrderRowStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 /** *
 * construct:
-* @param {string} _itemId - the auto generated id for referring this item within Order
-* @param {string} _itemType 
-* @description this is the core item class that handles per item priceCalculation
+* @param {string} _rowId - the auto generated id for referring this row within Order
+* @param {string} _rowType 
+* @description this is the core item class that handles per row price.calculation
 * @returns object entity
 ** */
-class rmOrderItem {
+class OrderRow {
 
-   constructor( _item ) {
-      this.item = _item;
-      this.item.status = OrderItemStatus[0];
+   constructor( _row, _discount ) {
+        this.row = _row;
+        this.row.status = OrderRowStatus[0];
+        this.discount = _discount;
    }
 
    /** 
-   Create an rmItemObject with format
-      const item = {
+   Create an rmOrderRowObject with format
+      const row = {
          id : 1,
-         type : "rent",
+         rowType : "rent",
          itemName: "drillMachine",
          pricePerUnit: 25,
          qty: 50, 
@@ -181,73 +185,64 @@ class rmOrderItem {
       }
    */
 
-
    /**
-    * getItem
-    * return this as item
+    * getOrderRow
+    * return this as orderRow
     * @param 
     * @returns <object>
     * */
-   getItem() {
-      return this.item;
-   }
-
-   /** 
-   Create an rmRowDiscountObject with format
-      const discountLine = {
-         id : 1,
-         type : "fn",
-         condition : checkMinQty(5, 3),
-         condition : checkCondition((x) => x > 50, 60)
-         discountPercentage :  10
-      }
-   */
-
-
-   calculateDiscountLine(_line, _discount = 1) {
-      if (_line.condition){
-         _discount = _discount * (1 - (_line.discountPercentage/100));
-      }
-      return _discount;
-   }
-
-   calculateBasePrice() {
-      // let that = this; mag niet van GertjJan :(
-    
-      // Step 1: extraheer variabelen voor itemPrijsBerekening.
-      const { name, pricePerUnit, qty, discountFactor , vat} = this.item;
+    getOrderRow() {
+      return this.row;
+    }
    
-      // Step 2: Wat is de BasisHuurPrijs?
-      let rowBasePrice = pricePerUnit * qty * this.rentPeriod;
+    applyDiscount() {
+        _applyDiscount(this.row, this.discount ); // 10% off
+    }
 
-      // Step 3: Bereken de Korting over de BasisHuurPrijs
-      let discount = rowBasePrice * (discountFactor / 100);
+    calculateDiscountLine(_line, _discount = 1) {
+        if (_line.condition){
+            _discount = _discount * (1 - (_line.discountPercentage/100));
+        }
+        return _discount;
+    }
 
-      // Step 4: Trek de korting van de BasisHuurPrijs af.
-      this.item.grossPrice = (rowBasePrice - discount).toFixed(2);
+    calculateBasePrice() {
+        // let that = this; mag niet van GertjJan :(
+    
+        // Step 1: extraheer variabelen voor itemPrijsBerekening.
+        const { name, pricePerUnit, qty, discountFactor , vat} = this.item;
+   
+        // Step 2: Wat is de BasisHuurPrijs?
+        let rowBasePrice = pricePerUnit * qty * this.rentPeriod;
 
-      // Step 5: Update Class.grossPrice
-      this.item.nettPrice = (this.item.grossPrice * (1 + vat)).toFixed(2);
+        // Step 3: Bereken de Korting over de BasisHuurPrijs
+        let discount = rowBasePrice * (discountFactor / 100);
+
+        // Step 4: Trek de korting van de BasisHuurPrijs af.
+        this.item.grossPrice = (rowBasePrice - discount).toFixed(2);
+
+        // Step 5: Update Class.grossPrice
+        this.item.nettPrice = (this.item.grossPrice * (1 + vat)).toFixed(2);
    }
 
    // helpers
    static checkCondition(_condition, _value) { return _condition(_value); }
    static checkMinQty(_qty, _min) { return _qty >= _min; }
 
-   applyDiscountTemplate(category) {
+    applyDiscountTemplate(category) {
         const discountTemplates = {
-            'electronics': { type: 'percentage', value: 10 },
-            'grabbelbak': { type: 'fixed', value: 50 },
-            'fashion': { type: 'flat', value: 20 },
-            'groceries': { type: 'buyXgetY', value: { x: 3, y: 1 } },
+            'electronics': { discountType: 'percentage', factor: { x: 3, y: 1 } },
+            'grabbelbak': { discountType: 'fixed', factor: { x: 20 } },
+            'fashion': { discountType: 'flat', factor: { x: 25 } },
+            'groceries': { discountType: 'buyXgetY', factor: { x: 2, y: 1 } },
         };
 
         if (!discountTemplates[category]) {
             throw new Error('Invalid category for discount template');
         }
 
-        const { type, value } = discountTemplates[category];
-        this.applyDiscount(type, value);
+        const { discountType, factor } = discountTemplates[category];
+        this.applyDiscount(discountType, factor);
     }
 
     updateStatus(newStatus) {
@@ -310,6 +305,10 @@ call multiLineDiscount
 }
 */
 
+
+
+
+
 /**
 * _processDiscount
 * calculate _item.grossPrice based on 1 discountLine
@@ -322,9 +321,9 @@ call multiLineDiscount
 * @returns overRides _item
 * */
 function _processDiscount(_item, _discount) {
-    const { pricePerUnit, qty } = _item;
-    const { type, factor } = _discount;
-        switch (type) {
+        const { pricePerUnit, qty } = _item;
+    const { discountType, factor } = _discount;
+        switch (discountType) {
             case 'percentage':
                 _item.grossPrice -= (_item.grossPrice * factor.x) / 100;
                 break;
@@ -350,7 +349,7 @@ function _processDiscount(_item, _discount) {
             default:
                 let _err={};
                 _err.errorStatus = -100;
-                _err.errorMsg = "disountType undefined correct: "+type;
+                _err.errorMsg = "disountType undefined correct: "+discountType;
                 _item.error = err;
                 console.log(err);
                 resolve(_item);
@@ -359,69 +358,72 @@ function _processDiscount(_item, _discount) {
 
 /**
 * applyDiscountLine
-* calculate discount based on type 'percentage', 'flat', 'fixed', 'buyXgetY'
+* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes 1 line
-* @param _item ( object)
+* @param _row ( object)
 * @param _discount (object)
-* @returns overRides _item
+* @returns overRides _row
 * */
-const applyDiscountLine = async (_item, _discountLine) => {
+const _applyDiscountLine = async (_item, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
-            const { pricePerUnit, qty } = _item;
+            const { pricePerUnit, qty } = _row;
           
             // calculate basePrice
-            _item.grossPrice  = pricePerUnit * qty;
+            _row.grossPrice  = pricePerUnit * qty;
 
             // processes discountLine
-            _processDiscount(_item, _discountLine)
+            _processDiscount(_row, _discountLine)
 
-            // responds _item...
-            resolve(_item);
+            // responds _row...
+            resolve(_row);
 
         } catch (err) {
             err.statusCode = -200;
             err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
-            _item.error = err;
+            _row.error = err;
             console.log(err);
-            resolve(_item);
+            resolve(_row);
       }
     });
 }
 
 /**
-* applyDiscount
-* calculate discount based on type 'percentage', 'flat', 'fixed', 'buyXgetY'
+* _applyDiscount
+* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes multiple lines
-* @param _item ( object)
+* @param _row ( object)
 * @param _discount (object)
-* @returns overRides _item
+* @returns overRides _row
 * */
-const applyDiscount = async (_item, _discountLines) => {
+ const _applyDiscount = async (_row, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
-            const { pricePerUnit, qty } = _item;
+            const { pricePerUnit, qty } = _row;
           
             // calculate basePrice
-            _item.grossPrice  = pricePerUnit * qty;
+            _row.grossPrice  = pricePerUnit * qty;
 
             // loops all discountLines
             Object.entries(_discountLines).forEach(([key, discount]) => {
                 // processes discountLine
-                _processDiscount(_item, discount)
+                _processDiscount(_row, discount)
             });
 
-            // responds _item...
-            resolve(_item);
+            // responds _row...
+            resolve(_row);
         } catch (err) {
             err.statusCode = -200;
             err.rejected = -"nanoService.applyDiscount() rejected!!... ";
-            _item.error = err;
+            _ite_rowm.error = err;
             console.log(err);
-            resolve(_item);
+            resolve(_row);
       }
     });
 }
+
+
+
 
 const colors = ['red','gray','white','yellow','magenta','green','blue','cyan','purple','teal'];
 
