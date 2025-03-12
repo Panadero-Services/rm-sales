@@ -50,9 +50,9 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
   * 4 finish = eind huur
   * 5 archive = order sluiten
   ** */
-const OrderStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const orderStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 
-const OrderFormat = {
+const orderFormat = {
       id : 1,
       orderNr : "RM-000000",
       initBy : "Unknown Primate",
@@ -154,7 +154,7 @@ class Order {
   * 4 finish = Einde huur
   * 5 archive = Order sluiten
   ** */
-const OrderLineStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const orderLineStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 /** *
 * construct:
 * @param {string} _lineId - the auto generated id for referring this line within Order
@@ -437,4 +437,4 @@ async initData() {
 }   
 */
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderLine, OrderStatus, OrderLineStatus, applyDiscountLine, applyDiscount };
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscountLine, applyDiscount };
