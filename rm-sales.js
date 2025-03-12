@@ -437,4 +437,4 @@ async initData() {
 }   
 */
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderLine, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount };
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderLine, OrderStatus, OrderLineStatus, applyDiscountLine, applyDiscount };
