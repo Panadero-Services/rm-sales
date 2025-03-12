@@ -322,45 +322,46 @@ call multiLineDiscount
 * */
 function _processDiscount(_line, _discount) {
     return new Promise( async (resolve, reject) => {
+        try {
+            const { pricePerUnit, qty } = _line;
+            const { discountType, factor } = _discount;
+                switch (discountType) {
+                    case 'percentage':
+                        _line.grossPrice -= (_line.grossPrice * factor.x) / 100;
+                        break;
+                    case 'flat':
+                        _line.grossPrice -= factor.x;
+                        break;
+                    case 'fixed':
+                        _line.grossPrice = factor.z;
+                        break;
+                    case 'buyXgetY':
+                        // nubmer of items NOT PART of discount offer
+                        const restItems = Math.min(qty % factor.y, factor.x);
+                        
+                        // number of items PART OF discount offer 
+                        const discountItems  = (Math.floor(qty / factor.y)*factor.x);
 
-        const { pricePerUnit, qty } = _line;
-        const { discountType, factor } = _discount;
-            switch (discountType) {
-                case 'percentage':
-                    _line.grossPrice -= (_line.grossPrice * factor.x) / 100;
-                    break;
-                case 'flat':
-                    _line.grossPrice -= factor.x;
-                    break;
-                case 'fixed':
-                    _line.grossPrice = factor.z;
-                    break;
-                case 'buyXgetY':
-                    // nubmer of items NOT PART of discount offer
-                    const restItems = Math.min(qty % factor.y, factor.x);
-                    
-                    // number of items PART OF discount offer 
-                    const discountItems  = (Math.floor(qty / factor.y)*factor.x);
+                        // calculate itemsToPay
+                        _line.itemsToPay = restItems + discountItems;
 
-                    // calculate itemsToPay
-                    _line.itemsToPay = restItems + discountItems;
-
-                       // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
-                    _line.grossPrice = _line.itemsToPay* pricePerUnit;
-                break;
-            default:
-                let _err={};
-                _err.errorStatus = -200;
-                _err.errorMsg = "disountdiscountType undefined correct: "+discountType;
+                           // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
+                        _line.grossPrice = _line.itemsToPay* pricePerUnit;
+                    break;
+                default:
+                    let _err={};
+                    _err.errorStatus = -200;
+                    _err.errorMsg = "disountdiscountType undefined correct: "+discountType;
+                    _line.error = err;
+                    console.log(err);
+                    resolve(_line);
+            } catch (err) {
+                err.statusCode = -210;
+                err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
                 _line.error = err;
                 console.log(err);
                 resolve(_line);
-        } catch (err) {
-            err.statusCode = -210;
-            err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
-            _line.error = err;
-            console.log(err);
-            resolve(_line);
+            }
         }
     });
 }
