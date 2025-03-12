@@ -21,12 +21,12 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
 /** *
 * v0.1.0 Initial Commit
-* RentMagice Class : Price Calculation Prototype
+* RentMagice Class : Price Calculation ProtodiscountType
 * ERP module for RM_Rental Order Handling inspired by frontEndTeamSeries
 * This module is supposed to calculate the order price for rental and sales orders
 * In order to make this work we need to import all order details as well
 * 
-* v01.1 Add DiscountTypes + DiscountTemplates
+* v01.1 Add discountTypes + DiscountTemplates
 * 
 * v01.2 Isolate routines
 * - applyDiscount
@@ -52,7 +52,7 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
   ** */
 const OrderStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 
-const Order = {
+const OrderFormat = {
       id : 1,
       orderNr : "RM-000000",
       initBy : "Unknown Primate",
@@ -74,7 +74,7 @@ const Order = {
 ** */
 class Order {
 
-   constructor(_order = Order) {
+   constructor(_order = OrderFormat) {
       this.orderNr = this.generateOrderNr();
       this.initBy = this.generateName();
       this.order = _order;
@@ -84,7 +84,7 @@ class Order {
       return this.order;
    }
 
-   addItem(_order = Order) {
+   addItem(_order = OrderFormat) {
       this.items.push(_order);
    }
 
@@ -95,24 +95,24 @@ class Order {
       this.order.grossPrice = 0;
       this.order.nettPrice = 0;
 
-      this.order.orderRows.forEach(row => {
-         const { type, itemName, pricePerUnit, qty, status, grossPrice, nettPrice} = order;
+      this.order.orderLines.forEach(line => {
+         const { discountType, itemName, pricePerUnit, qty, status, grossPrice, nettPrice} = order;
 
-         // Step 1: sum orderGrossPrice with rowGrossPrice
+         // Step 1: sum orderGrossPrice with lineGrossPrice
          this.grossPrice += grossPrice;
 
-         // Step 2: sum orderNettPrice with rowNettPrice
+         // Step 2: sum orderNettPrice with lineNettPrice
          this.nettPrice += nettPrice;
 
          console.log(item);
       });
 
       // Step 3 Extra kosten toevoegen
-      // --> packageCost = deprecated --> specific orderRow
+      // --> packageCost = deprecated --> specific orderLine
       // this.grossPrice += _packageCost;
 
       // Step 4 Extra korting toevoegen
-      // --> _packageDiscount = deprecated --> specific orderRow
+      // --> _packageDiscount = deprecated --> specific orderLine
       // this.grossPrice -= _packageDiscount;
       console.log(item);
 
@@ -126,8 +126,8 @@ class Order {
     * @returns Firstname Lastname
     * */
     generateName() {
-     let f = ["Sonia", "Bjork",  "Kai", "Louis", "Bob", "Robin", "Luka", "Eliana", "Jaden", "Ezra", "Luca", "Rowan", "Nova", "Amara", "Aaliyah", "Finn", "Lieuwe", "Mark", "Eric", "Eric", "Vince", "Inge", "Laura", "Linda", "Peter", "Mick", "Sofia", "Fleur", "Tessa", "Ray", "Raymond", "Toffie", "Eppie", "Mickey", "Piet", "Jan", "Mick", "Gopher", "Don", "Karel", "Albert", "Pieter"];
-     let l= ["Smith", "Johnson",'Thomson', "de Kloet" , "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Martinez", "Wilson", "Bakker", "Kroesbergen", "Wilson", "Nijssen", "Swanders", "Jansen", "Janssen", "Bond", "Garner", "van Basten", "Bergkamp", "Ali", "Hemyatahar", "Reagan", "van Kinsbergen", "van Brakel", "Alyeson"];
+     let f = ["Sonia", "Bjork",  "Kai", "Louis", "Bob", "Robin", "Luka", "Eliana", "Jaden", "Ezra", "Luca", "linean", "Nova", "Amara", "Aaliyah", "Finn", "Lieuwe", "Mark", "Eric", "Eric", "Vince", "Inge", "Laura", "Linda", "Peter", "Mick", "Sofia", "Fleur", "Tessa", "Ray", "Raymond", "Toffie", "Eppie", "Mickey", "Piet", "Jan", "Mick", "Gopher", "Don", "Karel", "Albert", "Pieter"];
+     let l= ["Smith", "Johnson",'Thomson', "de Kloet" , "Williams", "Blinen", "Jones", "Garcia", "Miller", "Davis", "Martinez", "Wilson", "Bakker", "Kroesbergen", "Wilson", "Nijssen", "Swanders", "Jansen", "Janssen", "Bond", "Garner", "van Basten", "Bergkamp", "Ali", "Hemyatahar", "Reagan", "van Kinsbergen", "van Brakel", "Alyeson"];
      let rf = Math.floor(Math.random()*f.length);
      let rl = Math.floor(Math.random()*l.length);
      return f[rf]+" "+l[rl];
@@ -146,7 +146,7 @@ class Order {
 }
 
 /** *
-  * rowStatus
+  * lineStatus
   * 0 created = Aangemaakt
   * 1 selected = Invoer klaar
   * 2 prepare = Voorbereiden + <optie Steppen> 
@@ -154,27 +154,27 @@ class Order {
   * 4 finish = Einde huur
   * 5 archive = Order sluiten
   ** */
-const OrderRowStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const OrderLineStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 /** *
 * construct:
-* @param {string} _rowId - the auto generated id for referring this row within Order
-* @param {string} _rowType 
-* @description this is the core item class that handles per row price.calculation
+* @param {string} _lineId - the auto generated id for referring this line within Order
+* @param {string} _discountType 
+* @description this is the core item class that handles per line price.calculation
 * @returns object entity
 ** */
-class OrderRow {
+class OrderLine {
 
-   constructor( _row, _discount ) {
-        this.row = _row;
-        this.row.status = OrderRowStatus[0];
+   constructor( _line, _discount ) {
+        this.line = _line;
+        this.line.status = OrderLineStatus[0];
         this.discount = _discount;
    }
 
    /** 
-   Create an rmOrderRowObject with format
-      const row = {
+   Create an rmOrderLineObject with format
+      const line = {
          id : 1,
-         rowType : "rent",
+         discountType : "rent",
          itemName: "drillMachine",
          pricePerUnit: 25,
          qty: 50, 
@@ -186,17 +186,17 @@ class OrderRow {
    */
 
    /**
-    * getOrderRow
-    * return this as orderRow
+    * getOrderLine
+    * return this as orderLine
     * @param 
     * @returns <object>
     * */
-    getOrderRow() {
-      return this.row;
+    getOrderLine() {
+      return this.line;
     }
    
     applyDiscount() {
-        _applyDiscount(this.row, this.discount ); // 10% off
+        _applyDiscount(this.line, this.discount ); // 10% off
     }
 
     calculateDiscountLine(_line, _discount = 1) {
@@ -213,13 +213,13 @@ class OrderRow {
         const { name, pricePerUnit, qty, discountFactor , vat} = this.item;
    
         // Step 2: Wat is de BasisHuurPrijs?
-        let rowBasePrice = pricePerUnit * qty * this.rentPeriod;
+        let lineBasePrice = pricePerUnit * qty * this.rentPeriod;
 
         // Step 3: Bereken de Korting over de BasisHuurPrijs
-        let discount = rowBasePrice * (discountFactor / 100);
+        let discount = lineBasePrice * (discountFactor / 100);
 
         // Step 4: Trek de korting van de BasisHuurPrijs af.
-        this.item.grossPrice = (rowBasePrice - discount).toFixed(2);
+        this.item.grossPrice = (lineBasePrice - discount).toFixed(2);
 
         // Step 5: Update Class.grossPrice
         this.item.nettPrice = (this.item.grossPrice * (1 + vat)).toFixed(2);
@@ -238,7 +238,7 @@ class OrderRow {
         };
 
         if (!discountTemplates[category]) {
-            throw new Error('Invalid category for discount template');
+            thline new Error('Invalid category for discount template');
         }
 
         const { discountType, factor } = discountTemplates[category];
@@ -247,7 +247,7 @@ class OrderRow {
 
     updateStatus(newStatus) {
         if (!OrderItemStatus.includes(newStatus)) {
-            throw new Error('Invalid status');
+            thline new Error('Invalid status');
         }
         this.status = newStatus;
     }
@@ -258,7 +258,7 @@ call multiLineDiscount
 {
     "item" : {
          "id" : 1,
-         "type" : "buy",
+         "discountType" : "buy",
          "itemName": "drillMachine",
          "pricePerUnit": 25,
          "qty": 7, 
@@ -270,7 +270,7 @@ call multiLineDiscount
         
     "discount" : {
         "discountline1":{
-            "type" : "buyXgetY", 
+            "discountType" : "buyXgetY", 
             "factor" : 
                 {   "x" : 4,
                     "y" : 6,
@@ -278,7 +278,7 @@ call multiLineDiscount
                 }
         }, 
         "discountline2":{
-        "type" : "flat", 
+        "discountType" : "flat", 
         "factor" : 
             {   "x" : 12,
                 "y" : 6,
@@ -286,7 +286,7 @@ call multiLineDiscount
             }
         },
         "discountline3":{
-        "type" : "fixed", 
+        "discountType" : "fixed", 
         "factor" : 
             {   "x" : 0,
                 "y" : 0,
@@ -294,7 +294,7 @@ call multiLineDiscount
             }
         },        
         "discountline4":{
-        "type" : "percentage", 
+        "discountType" : "percentage", 
         "factor" : 
             {   "x" : 2,
                 "y" : 6,
@@ -349,7 +349,7 @@ function _processDiscount(_item, _discount) {
             default:
                 let _err={};
                 _err.errorStatus = -100;
-                _err.errorMsg = "disountType undefined correct: "+discountType;
+                _err.errorMsg = "disountdiscountType undefined correct: "+discountType;
                 _item.error = err;
                 console.log(err);
                 resolve(_item);
@@ -360,30 +360,30 @@ function _processDiscount(_item, _discount) {
 * applyDiscountLine
 * calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes 1 line
-* @param _row ( object)
+* @param _line ( object)
 * @param _discount (object)
-* @returns overRides _row
+* @returns overRides _line
 * */
 const _applyDiscountLine = async (_item, _discountLine) => {
     return new Promise( async (resolve, reject) => {
         try {
-            const { pricePerUnit, qty } = _row;
+            const { pricePerUnit, qty } = _line;
           
             // calculate basePrice
-            _row.grossPrice  = pricePerUnit * qty;
+            _line.grossPrice  = pricePerUnit * qty;
 
             // processes discountLine
-            _processDiscount(_row, _discountLine)
+            _processDiscount(_line, _discountLine)
 
-            // responds _row...
-            resolve(_row);
+            // responds _line...
+            resolve(_line);
 
         } catch (err) {
             err.statusCode = -200;
             err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
-            _row.error = err;
+            _line.error = err;
             console.log(err);
-            resolve(_row);
+            resolve(_line);
       }
     });
 }
@@ -392,32 +392,32 @@ const _applyDiscountLine = async (_item, _discountLine) => {
 * _applyDiscount
 * calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes multiple lines
-* @param _row ( object)
+* @param _line ( object)
 * @param _discount (object)
-* @returns overRides _row
+* @returns overRides _line
 * */
- const _applyDiscount = async (_row, _discountLines) => {
+ const _applyDiscount = async (_line, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
-            const { pricePerUnit, qty } = _row;
+            const { pricePerUnit, qty } = _line;
           
             // calculate basePrice
-            _row.grossPrice  = pricePerUnit * qty;
+            _line.grossPrice  = pricePerUnit * qty;
 
             // loops all discountLines
             Object.entries(_discountLines).forEach(([key, discount]) => {
                 // processes discountLine
-                _processDiscount(_row, discount)
+                _processDiscount(_line, discount)
             });
 
-            // responds _row...
-            resolve(_row);
+            // responds _line...
+            resolve(_line);
         } catch (err) {
             err.statusCode = -200;
             err.rejected = -"nanoService.applyDiscount() rejected!!... ";
-            _ite_rowm.error = err;
+            _ite_linem.error = err;
             console.log(err);
-            resolve(_row);
+            resolve(_line);
       }
     });
 }
@@ -437,4 +437,4 @@ async initData() {
 }   
 */
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount };
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderLine, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount };
