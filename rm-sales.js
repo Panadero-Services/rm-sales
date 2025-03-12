@@ -394,4 +394,4 @@ const applyDiscount = async (_line, _discountLines) => {
     });
 }
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount };
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount };
