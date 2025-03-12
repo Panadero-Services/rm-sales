@@ -2,7 +2,7 @@
 import * as rm from '../rm-sales.js';
 //console.log(rm);
 
-const _rmOrder = new rm.rmOrder();
+const _rmOrder = new rm.Order();
 console.log(_rmOrder);
 
 

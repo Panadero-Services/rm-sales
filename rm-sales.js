@@ -74,7 +74,7 @@ const orderFormat = {
 ** */
 class Order {
 
-   constructor(_order = OrderFormat) {
+   constructor(_order = orderFormat) {
       this.orderNr = this.generateOrderNr();
       this.initBy = this.generateName();
       this.order = _order;
@@ -84,7 +84,7 @@ class Order {
       return this.order;
    }
 
-   addItem(_order = OrderFormat) {
+   addItem(_order = orderFormat) {
       this.items.push(_order);
    }
 
