@@ -1,5 +1,5 @@
 
-import { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount } from './rm-pricecalculation.js';
+import { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount } from './rm-sales.js';
 
 //const rmPriceCalculation = require("./rm-pricecalculation");
 

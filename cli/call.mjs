@@ -1,5 +1,5 @@
 // Voorbeeld gebruik:
-import * as rm from '../rm-pricecalculation.js';
+import * as rm from '../rm-sales.js';
 //console.log(rm);
 
 const _rmOrder = new rm.rmOrder();
@@ -14,7 +14,7 @@ async function f1() {
           //await callModule();
           resolve();
       } catch (err) {
-        console.log('errrrror.. pricecalculation....',err); 
+        console.log('errrrror.. rm-sales....',err); 
         process.exit(1);
       }
     }
