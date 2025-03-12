@@ -1,6 +1,4 @@
 
-import { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount } from './rm-sales.js';
+import { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscountLine, applyDiscount };
 
-//const rmPriceCalculation = require("./rm-pricecalculation");
-
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, rmOrder, rmOrderItem, OrderStatus, OrderItemStatus, applyDiscountLine, applyDiscount }; 
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscountLine, applyDiscount };
