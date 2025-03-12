@@ -1,7 +1,7 @@
 // * * *     *       *   *       *   *   *   * *** *
 // *    *       *     *      *   *       *   *     *
-// *   NanoService : rm-sales.js      * * 
-// *   Location : /modules/build/rm-sales  * 
+// *   NanoService module : rm-sales.js      * *   *
+// *   Location : /modules/build/rm-sales  *       *
 // *   Modified L.B.   *                 *         *
 // *   Date:    12 mar 2025             *          *
 // *   Version: v0.1.4.            *        *      *
@@ -35,11 +35,10 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * * v01.3 Include Fixed 
 * - replaces grossPrice with factor.z (fixed value)
 * 
-* * v01.4 Rename PriceCalculation to rmSales
+* * v01.4 Rename PriceCalculation to rm-sales
 * - replaces grossPrice with factor.z (fixed value)
 * 
 * **/
-
 
 /** *
   * orderStatus
@@ -50,6 +49,60 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
   * 4 finish = eind huur
   * 5 archive = order sluiten
   ** */
+
+/** *
+ *  Discount: 
+{
+    "line" : {
+         "id" : 1,
+         "discountType" : "buy",
+         "itemName": "drillMachine",
+         "pricePerUnit": 25,
+         "qty": 7, 
+         "status": "created", 
+         "grossPrice": 0, 
+         "nettPrice": 0, 
+         "vat" : 0.19
+      },
+        
+    "discount" : {
+        "discountline1":{
+            "discountType" : "buyXgetY", 
+            "factor" : 
+                {   "x" : 4,
+                    "y" : 6,
+                    "z" : 0
+                }
+        }, 
+        "discountline2":{
+        "discountType" : "flat", 
+        "factor" : 
+            {   "x" : 12,
+                "y" : 6,
+                "z" : 0
+            }
+        },
+        "discountline3":{
+        "discountType" : "fixed", 
+        "factor" : 
+            {   "x" : 0,
+                "y" : 0,
+                "z" : 320
+            }
+        },        
+        "discountline4":{
+        "discountType" : "percentage", 
+        "factor" : 
+            {   "x" : 2,
+                "y" : 6,
+                "z" : 0
+            }
+        }  
+    }
+}
+  ** */
+
+
 const orderStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
 
 const orderFormat = {
@@ -229,6 +282,7 @@ class OrderLine {
    static checkCondition(_condition, _value) { return _condition(_value); }
    static checkMinQty(_qty, _min) { return _qty >= _min; }
 
+/*
     applyDiscountTemplate(category) {
         const discountTemplates = {
             'electronics': { discountType: 'percentage', factor: { x: 3, y: 1 } },
@@ -244,7 +298,7 @@ class OrderLine {
         const { discountType, factor } = discountTemplates[category];
         this.applyDiscount(discountType, factor);
     }
-
+*/
     updateStatus(newStatus) {
         if (!OrderItemStatus.includes(newStatus)) {
             throw new Error('Invalid status');
@@ -253,61 +307,12 @@ class OrderLine {
     }
 }
 
-/*
-call multiLineDiscount
-{
-    "item" : {
-         "id" : 1,
-         "discountType" : "buy",
-         "itemName": "drillMachine",
-         "pricePerUnit": 25,
-         "qty": 7, 
-         "status": "created", 
-         "grossPrice": 0, 
-         "nettPrice": 0, 
-         "vat" : 0.19
-      },
-        
-    "discount" : {
-        "discountline1":{
-            "discountType" : "buyXgetY", 
-            "factor" : 
-                {   "x" : 4,
-                    "y" : 6,
-                    "z" : 0
-                }
-        }, 
-        "discountline2":{
-        "discountType" : "flat", 
-        "factor" : 
-            {   "x" : 12,
-                "y" : 6,
-                "z" : 0
-            }
-        },
-        "discountline3":{
-        "discountType" : "fixed", 
-        "factor" : 
-            {   "x" : 0,
-                "y" : 0,
-                "z" : 320
-            }
-        },        
-        "discountline4":{
-        "discountType" : "percentage", 
-        "factor" : 
-            {   "x" : 2,
-                "y" : 6,
-                "z" : 0
-            }
-        }  
-    }
+ const _errorLog =  (_err, _line, _statusCode, _msg ) => {
+    _err.statusCode = -_statusCode;
+    _err.rejected = _msg
+    _line.error = _err;
+    console.log(_line);
 }
-*/
-
-
-
-
 
 /**
 * _processDiscount
@@ -325,77 +330,37 @@ function _processDiscount(_line, _discount) {
         try {
             const { pricePerUnit, qty } = _line;
             const { discountType, factor } = _discount;
-                switch (discountType) {
-                    case 'percentage':
-                        _line.grossPrice -= (_line.grossPrice * factor.x) / 100;
-                        break;
-                    case 'flat':
-                        _line.grossPrice -= factor.x;
-                        break;
-                    case 'fixed':
-                        _line.grossPrice = factor.z;
-                        break;
-                    case 'buyXgetY':
-                        // nubmer of items NOT PART of discount offer
-                        const restItems = Math.min(qty % factor.y, factor.x);
-                        
-                        // number of items PART OF discount offer 
-                        const discountItems  = (Math.floor(qty / factor.y)*factor.x);
+            switch (discountType) {
+                case 'percentage':
+                    _line.grossPrice -= (_line.grossPrice * factor.x) / 100;
+                    break;
+                case 'flat':
+                    _line.grossPrice -= factor.x;
+                    break;
+                case 'fixed':
+                    _line.grossPrice = factor.z;
+                    break;
+                case 'buyXgetY':
+                    // nubmer of items NOT PART of discount offer
+                    const restItems = Math.min(qty % factor.y, factor.x);
+                    
+                    // number of items PART OF discount offer 
+                    const discountItems  = (Math.floor(qty / factor.y)*factor.x);
 
-                        // calculate itemsToPay
-                        _line.itemsToPay = restItems + discountItems;
+                    // calculate itemsToPay
+                    _line.itemsToPay = restItems + discountItems;
 
-                           // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
-                        _line.grossPrice = _line.itemsToPay* pricePerUnit;
+                       // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
+                    _line.grossPrice = _line.itemsToPay* pricePerUnit;
                     break;
                 default:
-                    let _err={};
-                    _err.errorStatus = -200;
-                    _err.errorMsg = "disountdiscountType undefined correct: "+discountType;
-                    _line.error = _err;
-                    console.log(_err);
+                    _errorLog({}, _line, -200, "discountType undefined correct: "+discountType);
                     resolve(_line);
-                }
-            } catch (err) {
-                err.statusCode = -210;
-                err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
-                _line.error = err;
-                console.log(err);
-                resolve(_line);
+            }
+        } catch (err) {  // logging.... do not reject!
+            _errorLog({}, _line, -210, "nanoService._processDiscount() rejected!!... ");
+            resolve(_line);
         }
-    });
-}
-
-
-/**
-* applyDiscountLine
-* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
-* passes 1 line
-* @param _line ( object)
-* @param _discount (object)
-* @returns overRides _line
-* */
-const applyDiscountLine = async (_line, _discountLine) => {
-    return new Promise( async (resolve, reject) => {
-        try {
-            const { pricePerUnit, qty } = _line;
-          
-            // calculate basePrice
-            _line.grossPrice  = pricePerUnit * qty;
-
-            // processes discountLine
-            _processDiscount(_line, _discountLine)
-
-            // responds _line...
-            resolve(_line);
-
-        } catch (err) {
-            err.statusCode = -200;
-            err.rejected = -"nanoService.applyDiscountLine() rejected!!... ";
-            _line.error = err;
-            console.log(err);
-            resolve(_line);
-      }
     });
 }
 
@@ -404,10 +369,10 @@ const applyDiscountLine = async (_line, _discountLine) => {
 * calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes multiple lines
 * @param _line ( object)
-* @param _discount (object)
+* @param _discountLines (object)
 * @returns overRides _line
 * */
- const applyDiscount = async (_line, _discountLines) => {
+const applyDiscount = async (_line, _discountLines) => {
     return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
@@ -415,37 +380,18 @@ const applyDiscountLine = async (_line, _discountLine) => {
             // calculate basePrice
             _line.grossPrice  = pricePerUnit * qty;
 
-            // loops all discountLines
+            // loop discountLines
             Object.entries(_discountLines).forEach(([key, discount]) => {
-                // processes discountLine
-                _processDiscount(_line, discount)
+                _processDiscount(_line, discount);
             });
 
-            // responds _line...
+            // resolving .... 
             resolve(_line);
-        } catch (err) {
-            err.statusCode = -200;
-            err.rejected = -"nanoService.applyDiscount() rejected!!... ";
-            _line.error = err;
-            console.log(err);
+        } catch (err) {  // logging.... do not reject!
+            _errorLog(err, _line, -200, "nanoService.applyDiscount() error caught!!... ");
             resolve(_line);
-      }
+        }
     });
 }
 
-
-
-
-const colors = ['red','gray','white','yellow','magenta','green','blue','cyan','purple','teal'];
-
-/**
- * initData
- * seed data constructor
- * */
-/*
-async initData() {
-   var that = this;
-}   
-*/
-
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscountLine, applyDiscount };
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, colors, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount };

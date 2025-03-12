@@ -10,7 +10,8 @@ please [contact me](mailto:lieuwe@panaderos.nl).
 
 | Version | Tested                      | Initial Release   |
 | ------- | ------------------------------------------ | ----------------- |
-| 0.1.3   | :white_check_mark: 	    	| 2025-03-11   |
+| 0.1.4   | :white_check_mark: 	    	| 2025-03-12   |
+| 0.1.3   | :white_check_mark:          | 2025-03-11   |
 | 0.1.2   | :white_check_mark:          | 2025-02-29   |
 
 ## 
@@ -30,8 +31,8 @@ const Order = {
       nettPrice : 0,
 };
 
-const OrderItemStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
-const Item = {
+const OrderRowStatus = ['created', 'article', 'prepare', 'open', 'finish', 'end'];
+const Row = {
      id : 1,
      type : "rent",
      itemName: "drillMachine",
@@ -43,8 +44,8 @@ const Item = {
      vat : 0.19
 }*/
 Create:
-RentMagic Class : rmOrder
-const _rmOrder = new rmOrder( item );
+RentMagic Class : Order
+const order = new Order(  );
 
 
 
@@ -64,6 +65,9 @@ const _rmOrder = new rmOrder( item );
 * 
 * * v01.3 Include Fixed 
 * - replaces grossPrice with factor.z (fixed value)
+* *
+* * v01.4 rm-sales 
+* - change item -> row
 * 
 * **/
 
@@ -87,7 +91,7 @@ CLI interaction
 * @param _item ( object)
 
 {
-    "item" : {
+    "row" : {
          "id" : 1,
          "type" : "buy",
          "itemName": "drillMachine",
