@@ -1,5 +1,5 @@
-# rm-pricecalculation
- RentMagic Pricecalculation Prototype Isolated Module NanoService
+# rm-sales.pricecalculation
+ RentMagic rm-sales.Pricecalculation Prototype Isolated Module NanoService
 
 
 ## Supported Versions
