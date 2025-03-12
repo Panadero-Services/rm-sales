@@ -238,7 +238,7 @@ class OrderLine {
         };
 
         if (!discountTemplates[category]) {
-            thline new Error('Invalid category for discount template');
+            throw new Error('Invalid category for discount template');
         }
 
         const { discountType, factor } = discountTemplates[category];
@@ -247,7 +247,7 @@ class OrderLine {
 
     updateStatus(newStatus) {
         if (!OrderItemStatus.includes(newStatus)) {
-            thline new Error('Invalid status');
+            throw new Error('Invalid status');
         }
         this.status = newStatus;
     }
