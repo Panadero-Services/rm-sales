@@ -1,6 +1,6 @@
 {
   "name": "rm-pricecalculation",
-  "version": "1.0.0",
+  "version": "0.1.5",
   "description": "RentMagic Price Calculation As A NanoService",
   "main": "index.js",
   "type" :  "module",
