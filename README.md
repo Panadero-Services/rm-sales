@@ -1,6 +1,9 @@
 # rm-sales.pricecalculation
- RentMagic rm-sales.Pricecalculation Prototype Isolated Module NanoService
-
+ RentMagic rm-sales.
+ Pricecalculation Prototype Encapsulated Module NanoService.
+ Encapsulation achieves loose coupling and modularity ; objects and packages can be replaced 
+ with alternative implementations whilst the same interface is maintained.
+ In this rm-class encapsulation is achieved by limiting outside access to the internal state. 
 
 ## Supported Versions
 
@@ -68,6 +71,12 @@ const order = new Order(  );
 * *
 * * v01.4 rm-sales 
 * - change item -> row
+*
+* * * v01.5 Add rentXgetY to rm-sales
+* *  distinguish rent vs buy: 
+*       _processDiscount --> _processDiscountBuy()
+*       <new rent>  --> _processDiscountRent()
+*       : utitlized to define period Discount
 * 
 * **/
 
@@ -79,7 +88,6 @@ CLI interaction
 | ------- | ------------------------------------------ | ----------------- |
 | 0.1.0   | :white_check_mark:   | 2025-03-07          |
 | 0.1.5   | :white_check_mark:   | 2025-03-23          | 
-
 
 - - -
 

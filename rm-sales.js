@@ -42,7 +42,7 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * *  distinguish rent vs buy: 
 *       _processDiscount --> _processDiscountBuy
 *       <new rent>  --> _processDiscountRent
-* - usded to define period Discount
+*       : utitlized to define period Discount
 * 
 * **/
 
