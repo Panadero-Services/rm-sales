@@ -173,6 +173,23 @@ CALL BUY
     }
 }
 
+--> RESOLVES --> 
+
+{
+    "id": 1,
+    "lineType": "buy",
+    "itemName": "drillMachine",
+    "pricePerUnit": 100,
+    "qty": 5,
+    "status": "created",
+    "grossPrice": 200,
+    "nettPrice": 0,
+    "vat": 0.19,
+    "itemsToPay": 2
+}
+
+- - -
+
 
 CALL RENTAL
 
@@ -208,6 +225,20 @@ CALL RENTAL
             }
         }  
     }
+}
+--> RESOLVES --> 
+{
+    "id": 1,
+    "lineType": "rent",
+    "itemName": "drillMachine",
+    "pricePerUnit": 100,
+    "qty": 5,
+    "periods": 10,
+    "status": "created",
+    "grossPrice": 686,
+    "nettPrice": 0,
+    "vat": 0.19,
+    "itemsToPay": 7
 }
 
 
