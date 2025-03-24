@@ -91,8 +91,7 @@ CLI interaction
 * fixed means... item.grossPrice equals factor.z
 * percentage means... item.grossPrice -= 5% (factor.x)
 * buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
---> specifically added for rentals:
-* rentXgetY means... 3 periods huur 2 betalen (factor.x) (factor.y)
+* rentXgetY means... 3 periods huur 2 betalen (factor.x) (factor.y) (->specifically added for rentals)
 
 * @param _item ( object)
 
