@@ -39,6 +39,9 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * - replaces grossPrice with factor.z (fixed value)
 * 
 * * v01.5 Add rentXgetY to rm-sales
+* *  distinguish rent vs buy: 
+*       _processDiscount --> _processDiscountBuy
+*       <new rent>  --> _processDiscountRent
 * - usded to define period Discount
 * 
 * **/
@@ -318,18 +321,17 @@ class OrderLine {
 }
 
 /**
-* _processDiscount
+* _processDiscountBuy
 * calculate _item.grossPrice based on 1 discountLine
 * flat means... item.grossPrice - 50 (factor.x)
 * fixed means... item.grossPrice equals factor.z
 * percentage means... item.grossPrice -= 5% (factor.x)
 * buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
-* rentXgetY means... 3 periods huur 2 betalen (factor.x) (factor.y)
 * @param _item ( object)
 * @param _discount (object)
 * @returns overRides _item
 * */
-function _processDiscount(_line, _discount) {
+function _processDiscountBuy(_line, _discount) {
 //    return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
@@ -356,12 +358,62 @@ function _processDiscount(_line, _discount) {
 
                        // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
                     _line.grossPrice = _line.itemsToPay* pricePerUnit;
-                case 'rentXgetY':
+                    break;
+                default:
+                    _errorLog({}, _line, -200, "discountType undefined correct: "+discountType);
+                    return(_line);
+            }
+        } catch (err) { // logging.... shutdown gracefully... do not reject
+            _errorLog({}, _line, -210, "nanoService._processDiscount() rejected!!... ");
+            return(_line);
+        }
+}
+
+/**
+* _processDiscountRent
+* calculate _item.grossPrice based on 1 discountLine
+* flat means... item.grossPrice - 50 (factor.x)
+* fixed means... item.grossPrice equals factor.z
+* percentage means... item.grossPrice -= 5% (factor.x)
+* buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
+* rentXgetY means... 3 periods huur 2 betalen (factor.x) (factor.y)
+* @param _item ( object)
+* @param _discount (object)
+* @returns overRides _item
+* */
+function _processDiscountRent(_line, _discount) {
+//    return new Promise( async (resolve, reject) => {
+        try {
+            const { pricePerUnit, qty, periods } = _line;
+            const { discountType, factor } = _discount;
+            switch (discountType) {
+                case 'percentage':
+                    _line.grossPrice -= (_line.grossPrice * factor.x) / 100;
+                    break;
+                case 'flat':
+                    _line.grossPrice -= factor.x;
+                    break;
+                case 'fixed':
+                    _line.grossPrice = factor.z;
+                    break;
+                case 'buyXgetY':
                     // nubmer of items NOT PART of discount offer
-                    const restPeriods = Math.min(qty % factor.y, factor.x);
+                    const restItems = Math.min(qty % factor.y, factor.x);
                     
                     // number of items PART OF discount offer 
-                    const discountPeriods  = (Math.floor(qty / factor.y)*factor.x);
+                    const discountItems  = (Math.floor(qty / factor.y)*factor.x);
+
+                    // calculate itemsToPay
+                    _line.itemsToPay = restItems + discountItems;
+
+                       // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
+                    _line.grossPrice = _line.itemsToPay* pricePerUnit;
+                case 'rentXgetY':
+                    // nubmer of items NOT PART of discount offer
+                    const restPeriods = Math.min(periods % factor.y, factor.x);
+                    
+                    // number of items PART OF discount offer 
+                    const discountPeriods  = (Math.floor(periods / factor.y)*factor.x);
 
                     // calculate itemsToPay
                     _line.itemsToPay = restPeriods + discountPeriods;
@@ -377,8 +429,8 @@ function _processDiscount(_line, _discount) {
             _errorLog({}, _line, -210, "nanoService._processDiscount() rejected!!... ");
             return(_line);
         }
- //   });
 }
+
 
 /**
 * _applyDiscount
@@ -398,7 +450,8 @@ const applyDiscount = async (_line, _discountLines) => {
 
             // loop discountLines
             Object.entries(_discountLines).forEach(([key, discount]) => {
-                _processDiscount(_line, discount);
+                if (_line.lineType=="buy") _processDiscountBuy(_line, discount);
+                if (_line.lineType=="rent") _processDiscountRent(_line, discount);
             });
 
             // resolving .... 
