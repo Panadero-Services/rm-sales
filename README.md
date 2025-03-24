@@ -10,7 +10,8 @@ please [contact me](mailto:lieuwe@panaderos.nl).
 
 | Version | Tested                      | Initial Release   |
 | ------- | ------------------------------------------ | ----------------- |
-| 0.1.4   | :white_check_mark: 	    	| 2025-03-12   |
+| 0.1.5   | :white_check_mark: 	    	| 2025-03-24   |
+| 0.1.4   | :white_check_mark:          | 2025-03-12   |
 | 0.1.3   | :white_check_mark:          | 2025-03-11   |
 | 0.1.2   | :white_check_mark:          | 2025-02-29   |
 
@@ -49,7 +50,6 @@ const order = new Order(  );
 
 
 
-
 /** *
 * v0.1.0 Initial Commit
 * RentMagice Class : Price Calculation Prototype
@@ -73,12 +73,15 @@ const order = new Order(  );
 
 - - -
 
-CLI interaction
+CLI interaction 
 
 | Call.js | Testversion                                  | Initial Release   |
 | ------- | ------------------------------------------ | ----------------- |
 | 0.1.0   | :white_check_mark:   | 2025-03-07          |
+| 0.1.5   | :white_check_mark:   | 2025-03-23          | 
 
+
+- - -
 
 {call multiLineDiscount
 
@@ -138,3 +141,75 @@ CLI interaction
         }  
     }
 }
+
+- - -
+
+/** *
+* v0.1.5 ADD RENTAL CALL
+
+CALL BUY
+
+"line" : {
+         "id" : 1,
+         "lineType" : "buy",
+         "itemName": "drillMachine",
+         "pricePerUnit": 100,
+         "qty": 5, 
+         "status": "created", 
+         "grossPrice": 0, 
+         "nettPrice": 0, 
+         "vat" : 0.19
+      },
+        
+    "discount" : {
+        "line3":{
+        "discountType" : "buyXgetY", 
+        "factor" : 
+            {   "x" : 1,
+                "y" : 3,
+                "z" : 220
+            }
+        }  
+    }
+}
+
+
+CALL RENTAL
+
+{
+    "line" : {
+         "id" : 1,
+         "lineType" : "rent",
+         "itemName": "drillMachine",
+         "pricePerUnit": 100,
+         "qty": 5,
+         "periods":10,
+         "status": "created", 
+         "grossPrice": 0, 
+         "nettPrice": 0, 
+         "vat" : 0.19
+      },
+        
+    "discount" : {
+        "line3":{
+        "discountType" : "rentXgetY", 
+        "factor" : 
+            {   "x" : 2,
+                "y" : 3,
+                "z" : 220
+            }
+        }  ,
+        "line4":{
+        "discountType" : "percentage", 
+        "factor" : 
+            {   "x" : 2,
+                "y" : 0,
+                "z" : 0
+            }
+        }  
+    }
+}
+
+
+*/
+
