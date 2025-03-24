@@ -434,8 +434,9 @@ function _processDiscountRent(_line, _discount) {
 
 /**
 * _applyDiscount
-* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
+* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY', 'rentXgetY'
 * passes multiple lines
+* distinguishes type of discount : 'buy' vs 'rent'
 * @param _line ( object)
 * @param _discountLines (object)
 * @returns overRides _line
