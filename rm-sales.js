@@ -3,16 +3,16 @@
 // *   NanoService module : rm-sales.js      * *   *
 // *   Location : /modules/build/rm-sales  *       *
 // *   Modified L.B.   *                 *         *
-// *   Date:    12 mar 2025             *          *
-// *   Version: v0.1.4.            *        *      *
+// *   Date:    24 mar 2025             *          *
+// *   Version: v0.1.5.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
 const moduleName = "RM-Sales";
-const moduleGit = "https://github.com/lieuwebakker/rm-sales";
-const moduleVersion = "0.1.4";
-const moduleDate = "12 mar 2025";
+const moduleGit = "https://github.com/panadero-services//rm-sales";
+const moduleVersion = "0.1.5";
+const moduleDate = "24 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
@@ -21,7 +21,7 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
 /** *
 * v0.1.0 Initial Commit
-* RentMagice Class : Price Calculation ProtodiscountType
+* RentMagic Class : Price Calculation ProtodiscountType
 * ERP module for RM_Rental Order Handling inspired by frontEndTeamSeries
 * This module is supposed to calculate the order price for rental and sales orders
 * In order to make this work we need to import all order details as well
@@ -37,6 +37,9 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * 
 * * v01.4 Rename PriceCalculation to rm-sales
 * - replaces grossPrice with factor.z (fixed value)
+* 
+* * v01.5 Add rentXgetY to rm-sales
+* - usded to define period Discount
 * 
 * **/
 
@@ -321,12 +324,13 @@ class OrderLine {
 * fixed means... item.grossPrice equals factor.z
 * percentage means... item.grossPrice -= 5% (factor.x)
 * buyXgetY means... 3 halen 2 betalen (factor.x) (factor.y)
+* rentXgetY means... 3 periods huur 2 betalen (factor.x) (factor.y)
 * @param _item ( object)
 * @param _discount (object)
 * @returns overRides _item
 * */
 function _processDiscount(_line, _discount) {
-    return new Promise( async (resolve, reject) => {
+//    return new Promise( async (resolve, reject) => {
         try {
             const { pricePerUnit, qty } = _line;
             const { discountType, factor } = _discount;
@@ -352,16 +356,28 @@ function _processDiscount(_line, _discount) {
 
                        // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
                     _line.grossPrice = _line.itemsToPay* pricePerUnit;
+                case 'rentXgetY':
+                    // nubmer of items NOT PART of discount offer
+                    const restPeriods = Math.min(qty % factor.y, factor.x);
+                    
+                    // number of items PART OF discount offer 
+                    const discountPeriods  = (Math.floor(qty / factor.y)*factor.x);
+
+                    // calculate itemsToPay
+                    _line.itemsToPay = restPeriods + discountPeriods;
+
+                       // _line.rest = qty % factor.x; // Je betaalt slechts voor 4(x) van elke (y)
+                    _line.grossPrice = _line.itemsToPay* pricePerUnit;
                     break;
                 default:
                     _errorLog({}, _line, -200, "discountType undefined correct: "+discountType);
-                    resolve(_line);
+                    return(_line);
             }
-        } catch (err) {  // logging.... do not reject!
+        } catch (err) { // logging.... shutdown gracefully... do not reject
             _errorLog({}, _line, -210, "nanoService._processDiscount() rejected!!... ");
-            resolve(_line);
+            return(_line);
         }
-    });
+ //   });
 }
 
 /**
@@ -387,7 +403,7 @@ const applyDiscount = async (_line, _discountLines) => {
 
             // resolving .... 
             resolve(_line);
-        } catch (err) {  // logging.... do not reject!
+        } catch (err) { // logging.... shutdown gracefully... do not reject
             _errorLog(err, _line, -200, "nanoService.applyDiscount() error caught!!... ");
             resolve(_line);
         }
