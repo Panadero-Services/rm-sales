@@ -1,0 +1,35 @@
+# logs
+logs
+
+# depencencies
+node_modules/
+
+# node
+.npm
+
+# commands
+.commands
+
+# distr
+dist
+
+# cache
+cache
+.cache/
+
+# environment var
+.env
+.env.production
+.env.development
+
+# ide
+*.sublime-project
+*.sublime-workspace
+
+#test
+test
+
+#sandbox
+sandbox
+jaw
+rufi
