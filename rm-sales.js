@@ -3,16 +3,16 @@
 // *   NanoService module : rm-sales.js      * *   *
 // *   Location : /modules/build/rm-sales  *       *
 // *   Modified L.B.   *                 *         *
-// *   Date:    24 mar 2025             *          *
-// *   Version: v0.1.5.            *        *      *
+// *   Date:    27 mar 2025             *          *
+// *   Version: v0.1.6.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
 const moduleName = "RM-Sales";
 const moduleGit = "https://github.com/panadero-services//rm-sales";
-const moduleVersion = "0.1.5";
-const moduleDate = "24 mar 2025";
+const moduleVersion = "0.1.6";
+const moduleDate = "27 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
@@ -42,7 +42,11 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * *  distinguish rent vs buy: 
 *       _processDiscount --> _processDiscountBuy
 *       <new rent>  --> _processDiscountRent
-*       : utitlized to define period Discount
+* - usded to define period Discount
+* 
+* v0.1.6 Specific RAW change call before deployment;
+* added .../api/price-calculator
+* !! prototype says: make it work for the sake of simplicity!! 
 * 
 * **/
 
@@ -192,6 +196,8 @@ class Order {
      return f[rf]+" "+l[rl];
    }
 
+
+
    /**
     * generateOrderNr
     * generates an OrderNr based on random figure
@@ -287,6 +293,17 @@ class OrderLine {
    // helpers
    static checkCondition(_condition, _value) { return _condition(_value); }
    static checkMinQty(_qty, _min) { return _qty >= _min; }
+
+
+
+
+
+
+
+
+
+
+
 
 /*
     applyDiscountTemplate(category) {
@@ -434,9 +451,8 @@ function _processDiscountRent(_line, _discount) {
 
 /**
 * _applyDiscount
-* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY', 'rentXgetY'
+* calculate discount based on discountType 'percentage', 'flat', 'fixed', 'buyXgetY'
 * passes multiple lines
-* distinguishes type of discount : 'buy' vs 'rent'
 * @param _line ( object)
 * @param _discountLines (object)
 * @returns overRides _line
@@ -464,4 +480,90 @@ const applyDiscount = async (_line, _discountLines) => {
     });
 }
 
-export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount };
+
+    /** *
+    * call:
+    * @param {object} _load : OrderLoad --> {RentalObjectID, Contract, RentalLines}
+    * @param {sting} _id : RentalObjectID --> "O0014"
+    * @param {string} _contract : Contract --> null
+    * @param {object} _contract : l --> null
+    * 
+    * @description this is the altered priceCalculation routine for the initial prototype deployment
+    * @returns object entity
+    ** */
+    const priceCalculator = async (_load) => {
+        return new Promise( async (resolve, reject) => {
+            try {
+                const VAT = 0.21;
+                _load.totalExcVAT = 0;
+                _load.totalVAT = 0;
+                _load.totalIncVAT = 0;
+
+                // loop RentalLines
+                Object.entries(_load.RentalLines).forEach(([key, line]) => {
+
+                    // periods calculation
+                    var _start = new Date(line.DateTimeStart);
+                    var _end = new Date(line.DateTimeEnd);
+                    line.periods = (_end - _start)/86_400_000;
+
+                    // calculate weeks/dayes
+                    var _weeks = Math.min(line.periods / 7).toFixed(0);
+                    var _days = Math.min(line.periods % 7);
+                    
+                    // calculate values base on #weeks and #days
+                    var _weekPrice = _weeks * line.ItemPeriods.filter(_period => _period.PeriodID === "Week")[0].PriceValue;
+                    var _dayPrice = _days * line.ItemPeriods.filter(_period => _period.PeriodID === "Dag")[0].PriceValue;
+                 
+                    var _discount = parseFloat(1+line.Discount).toFixed(2);
+
+
+                    line.price = parseFloat((_weekPrice + _dayPrice).toFixed(2)) ;
+                    line.totalExcVAT =  parseFloat(line.Amount*(_weekPrice + _dayPrice - _discount).toFixed(2)) ;
+                    line.totalVAT =  parseFloat((line.totalExcVAT * VAT).toFixed(2)) ;
+                    line.totalIncVAT =  parseFloat((line.totalExcVAT) + parseFloat(line.totalVAT).toFixed(2));
+
+                    _load.totalExcVAT =   parseFloat((_load.totalExcVAT + line.totalExcVAT).toFixed(2));
+                    _load.totalVAT =   parseFloat((_load.totalVAT + line.totalVAT).toFixed(2));
+                    _load.totalIncVAT =   parseFloat((_load.totalIncVAT + line.totalIncVAT).toFixed(2));
+
+                    line.priceCalcReason = generateReason();
+
+                    delete line['periods']; 
+                    delete line['ItemPeriods']; 
+                    delete line['ItemID']; 
+                    delete line['Amount']; 
+                    delete line['Discount']; 
+                    delete line['DateTimeStart']; 
+                    delete line['DateTimeEnd']; 
+                        //const weekPriceValue = ItemPeriods.filter(_period => _period.PeriodID === "Week")[0]?.PriceValue;
+                });
+
+
+                // resolving .... 
+                resolve(_load);
+            } catch (err) { // logging.... shutdown gracefully... do not reject
+                _errorLog(err, _load, -200, "nanoService.priceCalculator() error caught!!... ");
+                resolve(_load);
+            }
+        });
+    }
+
+
+   /**
+    * generateReason
+    * generates a reason based on randoms
+    * @param 
+    * @returns Reason
+    * */
+    const generateReason = () =>  {
+     let f = ["Standard daily rate", "Additional equipment",  "Service fee", "Whatever reason", "Unknown reason"];
+     let rf = Math.floor(Math.random()*f.length);
+     return f[rf];
+   }
+
+
+
+
+
+export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount, priceCalculator };
