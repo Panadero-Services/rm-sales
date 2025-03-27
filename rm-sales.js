@@ -4,15 +4,15 @@
 // *   Location : /modules/build/rm-sales  *       *
 // *   Modified L.B.   *                 *         *
 // *   Date:    27 mar 2025             *          *
-// *   Version: v0.1.6.            *        *      *
+// *   Version: v0.2.1.            *        *      *
 // ** *     *       *   *       *   *   *   *     **
 // * *  *       *     *      *   *       *  *  * * *
 
 /** Default module properties */
 const moduleName = "RM-Sales";
 const moduleGit = "https://github.com/panadero-services//rm-sales";
-const moduleVersion = "0.1.6";
-const moduleDate = "27 mar 2025";
+const moduleVersion = "0.2.1";
+const moduleDate = "28 mar 2025";
 const moduleAuthor = "lpab@Rm";
 const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 
@@ -47,6 +47,11 @@ const moduleTitle = "RM Sales redefined and reengineered... modular style!";
 * v0.1.6 Specific RAW change call before deployment;
 * added .../api/price-calculator
 * !! prototype says: make it work for the sake of simplicity!! 
+* 
+* v0.2.1 Fix 2 decimals issue + modular recipe priceCalculation for additional recipes
+* priceCalcRecipe1()
+* OrderLineResetRedundant()
+* _round2Decimals()
 * 
 * **/
 
@@ -294,17 +299,6 @@ class OrderLine {
    static checkCondition(_condition, _value) { return _condition(_value); }
    static checkMinQty(_qty, _min) { return _qty >= _min; }
 
-
-
-
-
-
-
-
-
-
-
-
 /*
     applyDiscountTemplate(category) {
         const discountTemplates = {
@@ -480,16 +474,68 @@ const applyDiscount = async (_line, _discountLines) => {
     });
 }
 
+/** *
+* payload call priceCalculation()
+{
+    "RentalObjectID": "O0014",
+    "Contract": null,
+    "RentalLines": [
+        {
+            "RentalLineID": "5",
+            "ItemID": "101",
+            "Amount": 2.0,
+            "Discount": -0.1,
+            "DateTimeStart": "2025-03-27T00:00:00Z",
+            "DateTimeEnd": "2025-03-30T00:00:00Z",
+            "ItemPeriods": [
+                {
+                    "PeriodID": "Week",
+                    "PriceType": "Fixed",
+                    "PriceValue": 40
+                },
+                {
+                    "PeriodID": "Dag",
+                    "PriceType": "Fixed",
+                    "PriceValue": 15.2322
+                }
+            ]
+        },
+        {
+            "RentalLineID": "5",
+            "ItemID": "102",
+            "Amount": 2.0,
+            "Discount": -0.11111,
+            "DateTimeStart": "2025-02-27T00:00:00Z",
+            "DateTimeEnd": "2025-03-30T00:00:00Z",
+            "ItemPeriods": [
+                {
+                    "PeriodID": "Dag",
+                    "PriceType": "Fixed",
+                    "PriceValue": 3.5
+                },
+                {
+                    "PeriodID": "Week",
+                    "PriceType": "Fixed",
+                    "PriceValue": 15.00
+                }
+            ]
+        }
+    ]
+}
+*/
+
+
+    // this helper function forces float 2 decimals
+    const _round2Decimals = (_val) => { return Math.round(_val * 100)/100; }
 
     /** *
     * call:
-    * @param {object} _load : OrderLoad --> {RentalObjectID, Contract, RentalLines}
+    * @param {object} _load : OrderLoad --> {RentalObjectID, Contract, RentalLines} !! By Reference
     * @param {sting} _id : RentalObjectID --> "O0014"
     * @param {string} _contract : Contract --> null
-    * @param {object} _contract : l --> null
     * 
     * @description this is the altered priceCalculation routine for the initial prototype deployment
-    * @returns object entity
+    * @returns object entity By Reference
     ** */
     const priceCalculator = async (_load) => {
         return new Promise( async (resolve, reject) => {
@@ -502,53 +548,81 @@ const applyDiscount = async (_line, _discountLines) => {
                 // loop RentalLines
                 Object.entries(_load.RentalLines).forEach(([key, line]) => {
 
-                    // periods calculation
-                    var _start = new Date(line.DateTimeStart);
-                    var _end = new Date(line.DateTimeEnd);
-                    line.periods = (_end - _start)/86_400_000;
+                    // recipe1 (...more recipes to follow...)
+                    priceCalcRecipe1(line, VAT);
 
-                    // calculate weeks/dayes
-                    var _weeks = Math.min(line.periods / 7).toFixed(0);
-                    var _days = Math.min(line.periods % 7);
-                    
-                    // calculate values base on #weeks and #days
-                    var _weekPrice = _weeks * line.ItemPeriods.filter(_period => _period.PeriodID === "Week")[0].PriceValue;
-                    var _dayPrice = _days * line.ItemPeriods.filter(_period => _period.PeriodID === "Dag")[0].PriceValue;
-                 
-                    var _discount = parseFloat(1+line.Discount).toFixed(2);
-
-
-                    line.price = parseFloat((_weekPrice + _dayPrice).toFixed(2)) ;
-                    line.totalExcVAT =  parseFloat(line.Amount*(_weekPrice + _dayPrice - _discount).toFixed(2)) ;
-                    line.totalVAT =  parseFloat((line.totalExcVAT * VAT).toFixed(2)) ;
-                    line.totalIncVAT =  parseFloat((line.totalExcVAT) + parseFloat(line.totalVAT).toFixed(2));
-
-                    _load.totalExcVAT =   parseFloat((_load.totalExcVAT + line.totalExcVAT).toFixed(2));
-                    _load.totalVAT =   parseFloat((_load.totalVAT + line.totalVAT).toFixed(2));
-                    _load.totalIncVAT =   parseFloat((_load.totalIncVAT + line.totalIncVAT).toFixed(2));
-
-                    line.priceCalcReason = generateReason();
-
-                    delete line['periods']; 
-                    delete line['ItemPeriods']; 
-                    delete line['ItemID']; 
-                    delete line['Amount']; 
-                    delete line['Discount']; 
-                    delete line['DateTimeStart']; 
-                    delete line['DateTimeEnd']; 
-                        //const weekPriceValue = ItemPeriods.filter(_period => _period.PeriodID === "Week")[0]?.PriceValue;
+                    // update orderTotals 
+                    _load.totalExcVAT = _round2Decimals(_load.totalExcVAT + line.totalExcVAT);
+                    _load.totalVAT = _round2Decimals(_load.totalVAT + line.totalVAT);
+                    _load.totalIncVAT = _round2Decimals(_load.totalIncVAT + line.totalIncVAT);
                 });
 
-
                 // resolving .... 
-                resolve(_load);
+                resolve();
             } catch (err) { // logging.... shutdown gracefully... do not reject
-                _errorLog(err, _load, -200, "nanoService.priceCalculator() error caught!!... ");
-                resolve(_load);
+                _errorLog(err, _load, -500, "nanoService.priceCalculator() error caught!!... ");
+                resolve();
             }
         });
     }
 
+
+    /** *
+    * call:
+    * @param {object} _line : OrderLoad. --> {RentalLine} !! By Reference
+    * @description this is the RentalLine that will be processed 
+    * @returns object entity By Reference
+    ** */
+    const priceCalcRecipe1 = async (_line, _vat) => {
+        return new Promise(  (resolve, reject) => {
+            try {
+
+                // periods calculation
+                var _start = new Date(_line.DateTimeStart);
+                var _end = new Date(_line.DateTimeEnd);
+                var _periods = (_end - _start)/86_400_000;
+
+                // calculate weeks/days
+                var _weeks = Math.round(Math.min(_periods / 7));
+                var _days = Math.min(_periods % 7);
+                
+                // calculate values base on #weeks and #days
+                var _weekPrice = _weeks * _line.ItemPeriods.filter(_period => _period.PeriodID === "Week")[0].PriceValue;
+                var _dayPrice = _days * _line.ItemPeriods.filter(_period => _period.PeriodID === "Dag")[0].PriceValue;
+                var _discountFactor = parseFloat(1+_line.Discount);
+
+                // update orderLine
+                _line.price = _round2Decimals(_weekPrice + _dayPrice);
+                _line.totalExcVAT = _round2Decimals(_line.Amount * (_weekPrice + _dayPrice) * _discountFactor);
+                _line.totalVAT =  _round2Decimals(_line.totalExcVAT * _vat);
+                _line.totalIncVAT = _round2Decimals(_line.totalExcVAT+_line.totalVAT);
+                _line.priceCalcReason = generateReason();
+
+                // resolving .... 
+                resolve();
+            } catch (err) { // logging.... shutdown gracefully... do not reject
+                _errorLog(err, _line, -500, "nanoService.priceCalcRecipe1() error caught!!... ");
+                resolve();
+            }
+        });
+    }
+
+    /** *
+    * call:
+    * @param {object} _line : OrderLoad. --> {RentalLine} !! By Reference
+    * @description this routine removes redundant parameters
+    * @returns object entity By Reference
+    ** */
+    const OrderLineResetRedundant = async (_line) => {
+        // redundant parameters 
+        delete _line['periods']; 
+        delete _line['ItemPeriods']; 
+        delete _line['ItemID']; 
+        delete _line['Amount']; 
+        delete _line['Discount']; 
+        delete _line['DateTimeStart']; 
+        delete _line['DateTimeEnd']; 
+    }
 
    /**
     * generateReason
@@ -557,13 +631,10 @@ const applyDiscount = async (_line, _discountLines) => {
     * @returns Reason
     * */
     const generateReason = () =>  {
-     let f = ["Standard daily rate", "Additional equipment",  "Service fee", "Whatever reason", "Unknown reason"];
+     let f = ["Standard daily rate", "Additional equipment",  "Service fee", "Whatever happened", "Unknown reason", "Random generated"];
      let rf = Math.floor(Math.random()*f.length);
      return f[rf];
    }
-
-
-
 
 
 export { moduleName, moduleGit, moduleVersion, moduleDate, moduleAuthor, moduleTitle, Order, OrderLine, orderStatus, orderLineStatus, applyDiscount, priceCalculator };
