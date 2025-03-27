@@ -615,7 +615,7 @@ const applyDiscount = async (_line, _discountLines) => {
     ** */
     const OrderLineResetRedundant = async (_line) => {
         // redundant parameters 
-        delete _line['periods']; 
+        // delete _line['periods']; 
         delete _line['ItemPeriods']; 
         delete _line['ItemID']; 
         delete _line['Amount']; 
