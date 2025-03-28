@@ -524,9 +524,10 @@ const applyDiscount = async (_line, _discountLines) => {
 }
 */
 
-
-    // this helper function forces float 2 decimals
-    const _round2Decimals = (_val) => { return Math.round(_val * 100)/100; }
+    // this helper forces float x decimals
+    const _rmRound = (_val, _decs=2) => { return Math.round(_val * 10**_decs)/ 10**_decs; }
+    const _rmFloor = (_val, _decs=2) => { return Math.floor(_val * 10**_decs)/ 10**_decs; }
+    const _rmCeil = (_val, _decs=2) => { return Math.ceil(_val * 10**_decs)/ 10**_decs; }
 
     /** *
     * call:
@@ -551,10 +552,13 @@ const applyDiscount = async (_line, _discountLines) => {
                     // recipe1 (...more recipes to follow...)
                     priceCalcRecipe1(line, VAT);
 
+                    // remove parameters
+                    OrderLineResetRedundant(line);
+
                     // update orderTotals 
-                    _load.totalExcVAT = _round2Decimals(_load.totalExcVAT + line.totalExcVAT);
-                    _load.totalVAT = _round2Decimals(_load.totalVAT + line.totalVAT);
-                    _load.totalIncVAT = _round2Decimals(_load.totalIncVAT + line.totalIncVAT);
+                    _load.totalExcVAT = _rmRound(_load.totalExcVAT + line.totalExcVAT,4);
+                    _load.totalVAT = _rmRound(_load.totalVAT + line.totalVAT,4);
+                    _load.totalIncVAT = _rmRound(_load.totalIncVAT + line.totalIncVAT,4);
                 });
 
                 // resolving .... 
@@ -566,7 +570,6 @@ const applyDiscount = async (_line, _discountLines) => {
         });
     }
 
-
     /** *
     * call:
     * @param {object} _line : OrderLoad. --> {RentalLine} !! By Reference
@@ -574,7 +577,7 @@ const applyDiscount = async (_line, _discountLines) => {
     * @returns object entity By Reference
     ** */
     const priceCalcRecipe1 = async (_line, _vat) => {
-        return new Promise(  (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             try {
 
                 // periods calculation
@@ -592,10 +595,10 @@ const applyDiscount = async (_line, _discountLines) => {
                 var _discountFactor = parseFloat(1+_line.Discount);
 
                 // update orderLine
-                _line.price = _round2Decimals(_weekPrice + _dayPrice);
-                _line.totalExcVAT = _round2Decimals(_line.Amount * (_weekPrice + _dayPrice) * _discountFactor);
-                _line.totalVAT =  _round2Decimals(_line.totalExcVAT * _vat);
-                _line.totalIncVAT = _round2Decimals(_line.totalExcVAT+_line.totalVAT);
+                _line.price = _rmRound(_weekPrice + _dayPrice);
+                _line.totalExcVAT = _rmRound(_line.Amount * (_weekPrice + _dayPrice) * _discountFactor);
+                _line.totalVAT =  _rmRound(_line.totalExcVAT * _vat);
+                _line.totalIncVAT = _rmRound(_line.totalExcVAT+_line.totalVAT);
                 _line.priceCalcReason = generateReason();
 
                 // resolving .... 
@@ -615,7 +618,7 @@ const applyDiscount = async (_line, _discountLines) => {
     ** */
     const OrderLineResetRedundant = async (_line) => {
         // redundant parameters 
-        // delete _line['periods']; 
+//        delete _line['periods']; 
         delete _line['ItemPeriods']; 
         delete _line['ItemID']; 
         delete _line['Amount']; 
