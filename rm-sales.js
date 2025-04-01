@@ -524,6 +524,11 @@ const applyDiscount = async (_line, _discountLines) => {
 }
 */
 
+  // this helper forces float x decimals
+    const _rmRound = (_val, _decs=2) => { return Math.round(_val * 10**_decs)/ 10**_decs; }
+    const _rmFloor = (_val, _decs=2) => { return Math.floor(_val * 10**_decs)/ 10**_decs; }
+    const _rmCeil = (_val, _decs=2) => { return Math.ceil(_val * 10**_decs)/ 10**_decs; }
+
 
     // this helper function forces float 2 decimals
     const _round2Decimals = (_val) => { return Math.round(_val * 100)/100; }
@@ -567,7 +572,6 @@ const applyDiscount = async (_line, _discountLines) => {
         });
     }
 
-
     /** *
     * call:
     * @param {object} _line : OrderLoad. --> {RentalLine} !! By Reference
@@ -575,7 +579,7 @@ const applyDiscount = async (_line, _discountLines) => {
     * @returns object entity By Reference
     ** */
     const priceCalcRecipe1 = async (_line, _vat) => {
-        return new Promise(  (resolve, reject) => {
+        return new Promise( (resolve, reject) => {
             try {
                 // Handle Sales items
                 if (_line.ItemType === "Sales") {
